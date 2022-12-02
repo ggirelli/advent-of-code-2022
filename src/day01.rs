@@ -1,14 +1,7 @@
-use std::fs;
+use crate::io::read_rows;
 
 pub fn pt1() {
-    // Read file content
-    let file_path = "data/day01.txt";
-    println!("Input file {}", file_path);
-    let contents = fs::read_to_string(file_path)
-        .expect("Should have been able to read the file");
-
-    // Prepare to iterate by row
-    let row_generator = contents.split("\n");
+    let _rows = read_rows("data/day01.txt".to_string());
 
     // Setup informative counters
     let mut row_counter = 0;
@@ -18,7 +11,7 @@ pub fn pt1() {
     // Retain only highest elf calorie count
     let mut max_elf_calories = 0;
     let mut current_elf_calories = 0;
-    for row in row_generator {
+    for row in _rows {
         if row == "" { // Empty line indicates the current elf is done
             // println!("Elf #{elf_counter} has {current_elf_calories} calories. (max has {max_elf_calories})");
             if current_elf_calories >= max_elf_calories {
@@ -45,15 +38,7 @@ pub fn pt1() {
 }
 
 pub fn pt2() {
-    let file_path = "data/day01.txt";
-    println!("Input file {}", file_path);
-
-    // Read file content
-    let contents = fs::read_to_string(file_path)
-        .expect("Should have been able to read the file");
-
-    // Prepare to iterate by row
-    let row_generator =  contents.split("\n");
+    let _rows = read_rows("data/day01.txt".to_string());
 
     let mut elf_counter = 0;
     let mut elf_calories: Vec<i32> = Vec::new();
@@ -61,7 +46,7 @@ pub fn pt2() {
     elf_calories.push(0);
     elf_items_counter.push(0);
 
-    for row in row_generator {
+    for row in _rows {
         if row == "" { // Empty line indicates the current elf is done
             // println!("Elf #{} has {} calories.", elf_counter+1, elf_calories[elf_counter]);
             elf_counter += 1;

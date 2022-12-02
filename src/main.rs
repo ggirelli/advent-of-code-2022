@@ -1,4 +1,6 @@
 use std::env;
+
+mod io;
 mod day01;
 mod day02;
 
