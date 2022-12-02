@@ -83,3 +83,11 @@ pub fn pt2() {
     let top_three_elves_sum: i32 = top_three_elves.iter().sum();
     println!("The three elves carrying most calories have a total of {} calories.", top_three_elves_sum);
 }
+
+pub fn run(part: i32) {
+    match part {
+        1 => pt1(),
+        2 => pt2(),
+        _ => println!("Part {} not found.", part),
+    }
+}
