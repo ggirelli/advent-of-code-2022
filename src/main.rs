@@ -1,8 +1,8 @@
 use std::env;
 
-mod io;
 mod day01;
 mod day02;
+mod io;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
