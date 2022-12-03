@@ -51,7 +51,7 @@ fn test_get_common_characters() {
     );
 }
 
-pub fn _count_characters(word: String) -> HashMap<char, i32> {
+pub fn count_characters(word: String) -> HashMap<char, i32> {
     let mut char_counts: HashMap<char, i32> = HashMap::new();
     for letter in word.chars() {
         let letter_count: &mut i32 = char_counts.entry(letter).or_insert(0);
@@ -63,7 +63,25 @@ pub fn _count_characters(word: String) -> HashMap<char, i32> {
 #[test]
 fn test_count_characters() {
     assert_eq!(
-        _count_characters("asdfgf".to_string()),
+        count_characters("asdfgf".to_string()),
         HashMap::from([('a', 1), ('s', 1), ('d', 1), ('f', 2), ('g', 1)])
     );
+}
+
+pub fn unique_string(word: String) -> String {
+    let mut unique_characters: Vec<char> = Vec::new();
+    for letter in count_characters(word).keys() {
+        unique_characters.push(*letter);
+    }
+    unique_characters.sort_by(|a, b| a.cmp(b));
+    let uniqued_string = String::from_iter(unique_characters);
+    uniqued_string
+}
+
+#[test]
+fn test_unique_string() {
+    assert_eq!(
+        unique_string("kahsfdCHSAILCaslhid".to_string()),
+        "ACHILSadfhikls".to_string()
+    )
 }
