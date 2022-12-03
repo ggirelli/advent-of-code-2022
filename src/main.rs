@@ -1,8 +1,6 @@
 use std::env;
 
-mod day01;
-mod day02;
-mod day03;
+mod days;
 mod utils;
 
 fn main() {
@@ -13,9 +11,9 @@ fn main() {
         println!("e.g., 'cargo run 1 1' for day 01 part 1")
     } else {
         match args[1].parse::<i32>().unwrap() {
-            1 => day01::run(args[2].parse::<i32>().unwrap()),
-            2 => day02::run(args[2].parse::<i32>().unwrap()),
-            3 => day03::run(args[2].parse::<i32>().unwrap()),
+            1 => days::day01::run(args[2].parse::<i32>().unwrap()),
+            2 => days::day02::run(args[2].parse::<i32>().unwrap()),
+            3 => days::day03::run(args[2].parse::<i32>().unwrap()),
             _ => println!("Day {} not found.", args[1]),
         }
     }
