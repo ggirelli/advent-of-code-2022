@@ -1,5 +1,3 @@
-//use std::fs;
-
 use crate::io::read_rows;
 
 pub fn pt1(file_path: String) -> i32 {
