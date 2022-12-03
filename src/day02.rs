@@ -1,4 +1,4 @@
-use crate::io::read_rows;
+use crate::utils::io::read_rows;
 
 pub fn pt1(file_path: String) -> i32 {
     let _rows: Vec<String> = read_rows(file_path);

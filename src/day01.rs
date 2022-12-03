@@ -1,4 +1,4 @@
-use crate::io::read_rows;
+use crate::utils::io::read_rows;
 
 pub fn pt1() {
     let _rows: Vec<String> = read_rows("data/day01.txt".to_string());

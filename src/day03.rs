@@ -1,7 +1,7 @@
-use crate::io::read_rows;
-use crate::strings::build_letter_value_map;
-use crate::strings::get_common_chars;
-use crate::strings::halve_string;
+use crate::utils::characters::build_letter_value_map;
+use crate::utils::io::read_rows;
+use crate::utils::strings::get_common_characters;
+use crate::utils::strings::halve_string;
 
 pub fn pt1(file_path: String) -> i32 {
     let _rows: Vec<String> = read_rows(file_path);
@@ -11,7 +11,7 @@ pub fn pt1(file_path: String) -> i32 {
     for row in _rows {
         let halves: [String; 2] = halve_string(row);
         let common_letters: Vec<char> =
-            get_common_chars(halves[0].to_string(), halves[1].to_string());
+            get_common_characters(halves[0].to_string(), halves[1].to_string());
 
         for letter in common_letters {
             match _letter_values.get(&letter) {

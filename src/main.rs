@@ -3,8 +3,7 @@ use std::env;
 mod day01;
 mod day02;
 mod day03;
-mod io;
-mod strings;
+mod utils;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
