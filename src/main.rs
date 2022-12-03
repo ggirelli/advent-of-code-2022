@@ -2,7 +2,9 @@ use std::env;
 
 mod day01;
 mod day02;
+mod day03;
 mod io;
+mod strings;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -14,6 +16,7 @@ fn main() {
         match args[1].parse::<i32>().unwrap() {
             1 => day01::run(args[2].parse::<i32>().unwrap()),
             2 => day02::run(args[2].parse::<i32>().unwrap()),
+            3 => day03::run(args[2].parse::<i32>().unwrap()),
             _ => println!("Day {} not found.", args[1]),
         }
     }
