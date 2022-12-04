@@ -14,6 +14,7 @@ fn main() {
             1 => days::day01::run(args[2].parse::<i32>().unwrap()),
             2 => days::day02::run(args[2].parse::<i32>().unwrap()),
             3 => days::day03::run(args[2].parse::<i32>().unwrap()),
+            4 => days::day04::run(args[2].parse::<i32>().unwrap()),
             _ => println!("Day {} not found.", args[1]),
         }
     }
