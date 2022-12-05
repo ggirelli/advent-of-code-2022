@@ -52,7 +52,7 @@ pub fn pt1(file_path: String) -> String {
 
     let mut passed_stack_def: bool = false;
     for row in _rows {
-        if !passed_stack_def {
+        if !passed_stack_def { // skip stack definition
             passed_stack_def = row.len() == 0;
         } else {
             let instructions: Vec<String> = row.split(" ").into_iter().map(String::from).collect();
@@ -88,10 +88,56 @@ fn test_pt1() {
     assert_eq!(answer, "CMZ");
 }
 
+pub fn pt2(file_path: String) -> String {
+    let _rows: Vec<String> = read_rows(file_path);
+
+    let mut crate_stacks: Vec<String> = parse_crate_stacks(&_rows);
+
+    let mut passed_stack_def: bool = false;
+    for row in _rows {
+        if !passed_stack_def { // skip stack definition
+            passed_stack_def = row.len() == 0;
+        } else {
+            let instructions: Vec<String> = row.split(" ").into_iter().map(String::from).collect();
+            let quantity: usize = instructions[1].parse::<usize>().unwrap();
+            let from_idx: usize = instructions[3].parse::<usize>().unwrap() - 1;
+            let to_idx: usize = instructions[5].parse::<usize>().unwrap() - 1;
+
+            // Select crates to move
+            let to_move: String = crate_stacks[from_idx][..quantity].to_string();
+
+            // Remove crates from source stack
+            crate_stacks[from_idx] = crate_stacks[from_idx][quantity..].to_string();
+
+            // Add crates to target stack
+            crate_stacks[to_idx] = to_move + &crate_stacks[to_idx];
+        }
+    }
+
+    // Select top crates
+    let mut top_crates: String = String::new();
+    for stack in crate_stacks {
+        top_crates.push(stack.chars().nth(0).unwrap());
+    }
+
+    top_crates
+}
+
+#[test]
+fn test_pt2() {
+    let answer: String = pt2("data/day05.test.txt".to_string());
+    assert_eq!(answer, "MCD");
+}
+
 pub fn run(part: i32) {
     let _result: i32 = match part {
         1 => {
             let top_crates: String = pt1("data/day05.txt".to_string());
+            println!("The top crates are: {}", top_crates);
+            0
+        }
+        2 => {
+            let top_crates: String = pt2("data/day05.txt".to_string());
             println!("The top crates are: {}", top_crates);
             0
         }
