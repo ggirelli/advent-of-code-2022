@@ -85,3 +85,64 @@ fn test_unique_string() {
         "ACHILSadfhikls".to_string()
     )
 }
+
+pub fn find_stretch_of_unique_characters(content: String, length: usize) -> i32 {
+    for i in (length - 1)..content.len() {
+        let mut has_repeats: bool = false;
+        for count in count_characters(content[(i + 1 - length)..(i + 1)].to_string()).values() {
+            has_repeats = *count > 1;
+            if has_repeats {
+                break;
+            }
+        }
+        if !has_repeats {
+            return (i + 1) as i32;
+        }
+    }
+    -1
+}
+
+#[test]
+fn test_find_stretch_of_unique_characters() {
+    assert_eq!(
+        find_stretch_of_unique_characters("mjqjpqmgbljsphdztnvjfqwrcgsmlb".to_string(), 4),
+        7
+    );
+    assert_eq!(
+        find_stretch_of_unique_characters("bvwbjplbgvbhsrlpgdmjqwftvncz".to_string(), 4),
+        5
+    );
+    assert_eq!(
+        find_stretch_of_unique_characters("nppdvjthqldpwncqszvftbrmjlhg".to_string(), 4),
+        6
+    );
+    assert_eq!(
+        find_stretch_of_unique_characters("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg".to_string(), 4),
+        10
+    );
+    assert_eq!(
+        find_stretch_of_unique_characters("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw".to_string(), 4),
+        11
+    );
+
+    assert_eq!(
+        find_stretch_of_unique_characters("mjqjpqmgbljsphdztnvjfqwrcgsmlb".to_string(), 14),
+        19
+    );
+    assert_eq!(
+        find_stretch_of_unique_characters("bvwbjplbgvbhsrlpgdmjqwftvncz".to_string(), 14),
+        23
+    );
+    assert_eq!(
+        find_stretch_of_unique_characters("nppdvjthqldpwncqszvftbrmjlhg".to_string(), 14),
+        23
+    );
+    assert_eq!(
+        find_stretch_of_unique_characters("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg".to_string(), 14),
+        29
+    );
+    assert_eq!(
+        find_stretch_of_unique_characters("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw".to_string(), 14),
+        26
+    );
+}
