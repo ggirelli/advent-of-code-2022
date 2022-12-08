@@ -72,3 +72,18 @@ fn test_do_overlap_i32() {
         false
     );
 }
+
+pub fn any_ge(vec: &Vec<i32>, thr: i32) -> bool {
+    for n in vec {
+        if n >= &thr {
+            return true;
+        }
+    }
+    false
+}
+
+#[test]
+fn test_any_ge() {
+    assert_eq!(any_ge(&[0, 1, 2, 3, 4].to_vec(), 5), false);
+    assert_eq!(any_ge(&[0, 1, 5, 3, 4].to_vec(), 5), true);
+}
