@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use crate::utils::characters::build_letter_value_map;
+use crate::utils::char::build_letter_value_map;
 use crate::utils::io::read_rows;
-use crate::utils::strings::count_characters;
-use crate::utils::strings::get_common_characters;
-use crate::utils::strings::halve_string;
-use crate::utils::strings::unique_string;
+use crate::utils::string::count_characters;
+use crate::utils::string::get_common_characters;
+use crate::utils::string::halve_string;
+use crate::utils::string::unique_string;
 
 pub fn pt1(file_path: String) -> i32 {
     let _rows: Vec<String> = read_rows(file_path);

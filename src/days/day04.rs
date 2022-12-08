@@ -1,6 +1,6 @@
 use crate::utils::io::read_rows;
-use crate::utils::vecs::do_overlap_i32;
-use crate::utils::vecs::is_subset_i32;
+use crate::utils::vec::do_overlap_i32;
+use crate::utils::vec::is_subset_i32;
 
 fn assignment2sections(assignment: String) -> Vec<i32> {
     let mut sections: Vec<i32> = Vec::new();

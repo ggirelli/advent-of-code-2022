@@ -1,5 +1,5 @@
-pub mod characters;
+pub mod char;
 pub mod fs;
 pub mod io;
-pub mod strings;
-pub mod vecs;
+pub mod string;
+pub mod vec;

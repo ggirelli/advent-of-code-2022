@@ -1,5 +1,5 @@
 use crate::utils::io::read_rows;
-use crate::utils::strings::find_stretch_of_unique_characters;
+use crate::utils::string::find_stretch_of_unique_characters;
 
 pub fn pt1(file_path: String) -> i32 {
     let _rows: Vec<String> = read_rows(file_path);
