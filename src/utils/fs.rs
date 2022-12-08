@@ -1,53 +1,5 @@
 use std::collections::HashMap;
 
-pub struct Folder {
-    pub files: HashMap<String, File>,
-    pub folders: HashMap<String, Folder>,
-}
-
-impl Folder {
-    fn new() -> Folder {
-        Folder {
-            files: HashMap::new(),
-            folders: HashMap::new(),
-        }
-    }
-
-    fn size(&self) -> usize {
-        let mut size: usize = 0;
-        for file in self.files.values() {
-            size += file.size;
-        }
-        for folder in self.folders.values() {
-            size += folder.size();
-        }
-        size
-    }
-
-    fn get_child_folder(&self, path: Vec<String>) -> &Folder {
-        let mut current_folder: &Folder = &self;
-        for path_part in &path {
-            assert!(current_folder.folders.contains_key(path_part));
-            match current_folder.folders.get(path_part) {
-                Some(target_folder) => current_folder = target_folder,
-                _ => panic!("ERROR: {:?} folder not found.", path),
-            }
-        }
-        current_folder
-    }
-
-    fn get_child_file(&self, path: Vec<String>) -> &File {
-        match self.get_child_folder(path[..(path.len()-1)].to_vec()).files.get(&path[path.len()-1]) {
-            Some(child_file) => {return child_file;},
-            _ => panic!("ERROR: {:?} file not found.", path),
-        }
-    }
-}
-
-pub struct File {
-    size: usize,
-}
-
 fn line_is_command(line: &String) -> bool {
     line.chars().nth(0).unwrap() == '$'
 }
@@ -58,48 +10,149 @@ fn test_line_is_command() {
     assert_eq!(line_is_command(&"dir a".to_string()), false);
 }
 
-pub fn commands2fs(_lines: &Vec<String>) -> Folder {
-    assert_eq!(line_is_command(&_lines[0]), true);
-    assert_eq!(_lines[0][2..4].to_string(), "cd");
-    let mut root: Folder = Folder::new();
+pub fn parse_command(line: &String) -> [String; 2] {
+    assert!(line_is_command(line));
 
-    let mut folder_path: Vec<String> = Vec::new();
-    let mut current_command: String = String::from("");
-    let mut command_output: Vec<String> = Vec::new();
-    for line in _lines[1..].to_vec() {
-        if line_is_command(&line) {
-            if current_command.len() > 0 {
-                // Parse command output
+    let command_parts: Vec<String> = line[2..].split(" ").into_iter().map(String::from).collect();
+    match command_parts.len() {
+        1 => return [command_parts[0].to_string(), "".to_string()],
+        2 => return [command_parts[0].to_string(), command_parts[1].to_string()],
+        _ => panic!("ERROR: too many command parts '{}'", line),
+    }
+}
 
-                // Reset command output
-                command_output = Vec::new();
-            }
+#[test]
+fn test_parse_command() {
+    assert_eq!(parse_command(&String::from("$ cd a")), ["cd", "a"]);
+    assert_eq!(parse_command(&String::from("$ ls a")), ["ls", "a"]);
+}
 
-            current_command = line.to_string();
-            match &line[2..4] {
-                "cd" => {
-                    let target: String = line[5..].to_string();
-                    if target == "..".to_string() {
-                        assert!(folder_path.len() > 0);
-                        folder_path = folder_path[..(folder_path.len() - 1)].to_vec();
-                    } else {
-                        root.folders.insert(target.to_string(), Folder::new());
-                        folder_path.push(target);
-                    }
-                },
-                "ls" => {},
-                _ => {},
-            }
-        } else {
-            command_output.push(line.to_string());
+#[test]
+#[should_panic]
+fn test_parse_command_not_command() {
+    parse_command(&String::from("cd a"));
+}
+
+#[test]
+#[should_panic]
+fn test_parse_command_many_parts() {
+    parse_command(&String::from("$ cd a a"));
+}
+
+pub struct Folder {
+    folders: HashMap<String, Folder>,
+    files: HashMap<String, usize>,
+}
+
+impl Folder {
+    pub fn new() -> Folder {
+        Folder {
+            folders: HashMap::new(),
+            files: HashMap::new(),
         }
     }
 
-    root
+    pub fn size(&self) -> usize {
+        let mut size: usize = 0;
+        for file_size in self.files.values() {
+            size += file_size;
+        }
+        for folder in self.folders.values() {
+            size += folder.size();
+        }
+        size
+    }
+
+    pub fn iter_folders(&self) -> Vec<&Folder> {
+        let mut all_folders: Vec<&Folder> = Vec::new();
+        for folder in self.folders.values() {
+            all_folders.extend(folder.iter_folders());
+        }
+        all_folders.extend(self.folders.values());
+        all_folders
+    }
+}
+
+pub fn total_size_small_folders(root: Folder, size_thr: usize) -> usize {
+    let mut total_size: usize = 0;
+    for folder in root.iter_folders() {
+        if folder.size() < size_thr {
+            total_size += folder.size();
+        }
+    }
+    total_size
+}
+
+pub fn commands2fs(_lines: Vec<String>, mut root: Folder) -> (Folder, usize) {
+    let mut line_idx: usize = 0;
+    while line_idx < _lines.len() {
+        let line: &String = &_lines[line_idx];
+
+        if line_is_command(line) {
+            let parsed: [String; 2] = parse_command(line);
+
+            match parsed[0].as_str() {
+                "cd" => match parsed[1].as_str() {
+                    ".." => return (root, line_idx),
+                    _ => {
+                        let mut selected_dir: Folder = root
+                            .folders
+                            .remove(&parsed[1])
+                            .expect("ERROR: trying to access a missing folder.");
+
+                        let parsed_lines_counter: usize;
+                        (selected_dir, parsed_lines_counter) =
+                            commands2fs(_lines[(line_idx + 1)..].to_vec(), selected_dir);
+                        line_idx += parsed_lines_counter + 1;
+                        root.folders.insert(parsed[1].to_string(), selected_dir);
+                    }
+                },
+                "ls" => {}
+                _ => panic!("ERROR: unrecognized command line '{}'", line),
+            }
+        } else {
+            let parsed: Vec<String> = line.split(" ").into_iter().map(String::from).collect();
+
+            match parsed[0].as_str() {
+                "dir" => {
+                    root.folders.insert(parsed[1].to_string(), Folder::new());
+                }
+                _ => {
+                    root.files
+                        .insert(parsed[1].to_string(), parsed[0].parse::<usize>().unwrap());
+                }
+            }
+        }
+
+        line_idx += 1;
+    }
+
+    (root, line_idx)
 }
 
 #[test]
 fn test_commands2fs() {
     use crate::utils::io::read_rows;
+
     let _rows: Vec<String> = read_rows("data/day07.test.txt".to_string());
+    assert_eq!(_rows[0], "$ cd /");
+
+    let mut root: Folder;
+    (root, _) = commands2fs(_rows[1..].to_vec(), Folder::new());
+
+    assert_eq!(root.size(), 48381165);
+    assert_eq!(
+        root.folders
+            .get("d")
+            .expect("ERROR: folder 'd' not found.")
+            .size(),
+        24933642
+    );
+    assert_eq!(
+        root.folders
+            .get("a")
+            .expect("ERROR: folder 'a' not found.")
+            .size(),
+        94853
+    );
 }
