@@ -76,11 +76,23 @@ impl Folder {
 pub fn total_size_small_folders(root: Folder, size_thr: usize) -> usize {
     let mut total_size: usize = 0;
     for folder in root.iter_folders() {
-        if folder.size() < size_thr {
-            total_size += folder.size();
+        let current_folder_size: usize = folder.size();
+        if current_folder_size < size_thr {
+            total_size += current_folder_size;
         }
     }
     total_size
+}
+
+pub fn find_smallest_large_folder(root: Folder, size_thr: usize) -> usize {
+    let mut min_size: usize = root.size();
+    for folder in root.iter_folders() {
+        let current_folder_size: usize = folder.size();
+        if current_folder_size >= size_thr && min_size > current_folder_size {
+            min_size = current_folder_size;
+        }
+    }
+    min_size
 }
 
 pub fn commands2fs(_lines: Vec<String>, mut root: Folder) -> (Folder, usize) {
