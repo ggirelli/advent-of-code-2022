@@ -38,7 +38,7 @@ fn parse_crate_stacks(_rows: &Vec<String>) -> Vec<String> {
 
 #[test]
 fn test_parse_crate_stacks() {
-    let _rows: Vec<String> = read_rows("data/day05.test.txt".to_string());
+    let _rows: Vec<String> = read_rows(&"data/day05.test.txt".to_string());
     let crate_stacks: Vec<String> = parse_crate_stacks(&_rows);
     assert_eq!(crate_stacks[0], "NZ".to_string());
     assert_eq!(crate_stacks[1], "DCM".to_string());
@@ -46,13 +46,14 @@ fn test_parse_crate_stacks() {
 }
 
 pub fn pt1(file_path: String) -> String {
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
 
     let mut crate_stacks: Vec<String> = parse_crate_stacks(&_rows);
 
     let mut passed_stack_def: bool = false;
     for row in _rows {
-        if !passed_stack_def { // skip stack definition
+        if !passed_stack_def {
+            // skip stack definition
             passed_stack_def = row.len() == 0;
         } else {
             let instructions: Vec<String> = row.split(" ").into_iter().map(String::from).collect();
@@ -89,13 +90,14 @@ fn test_pt1() {
 }
 
 pub fn pt2(file_path: String) -> String {
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
 
     let mut crate_stacks: Vec<String> = parse_crate_stacks(&_rows);
 
     let mut passed_stack_def: bool = false;
     for row in _rows {
-        if !passed_stack_def { // skip stack definition
+        if !passed_stack_def {
+            // skip stack definition
             passed_stack_def = row.len() == 0;
         } else {
             let instructions: Vec<String> = row.split(" ").into_iter().map(String::from).collect();

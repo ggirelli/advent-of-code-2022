@@ -1,7 +1,7 @@
 use crate::utils::io::read_rows;
 
 pub fn pt1(file_path: String) -> i32 {
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
 
     let mut total_score: i32 = 0;
     for row in _rows {
@@ -39,7 +39,7 @@ fn test_pt1() {
 }
 
 pub fn pt2(file_path: String) -> i32 {
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
 
     let mut total_score = 0;
     for row in _rows {

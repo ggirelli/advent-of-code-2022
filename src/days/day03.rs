@@ -8,7 +8,7 @@ use crate::utils::string::halve_string;
 use crate::utils::string::unique_string;
 
 pub fn pt1(file_path: String) -> i32 {
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
     let _letter_values = build_letter_value_map();
 
     let mut total_priority: i32 = 0;
@@ -38,7 +38,7 @@ fn test_pt1() {
 
 pub fn pt2(file_path: String) -> i32 {
     let elf_group_size: usize = 3;
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
     let _letter_values = build_letter_value_map();
 
     let mut total_badge_priority: i32 = 0;

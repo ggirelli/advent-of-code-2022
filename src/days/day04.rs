@@ -16,7 +16,7 @@ fn assignment2sections(assignment: String) -> Vec<i32> {
 }
 
 pub fn pt1(file_path: String) -> i32 {
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
 
     let mut subset_pair_counter: i32 = 0;
     for row in _rows {
@@ -46,7 +46,7 @@ fn test_pt1() {
     assert_eq!(answer, 2);
 }
 pub fn pt2(file_path: String) -> i32 {
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
 
     let mut overlap_pair_counter: i32 = 0;
     for row in _rows {

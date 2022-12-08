@@ -113,7 +113,7 @@ pub fn filter_visible(matrix: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
 #[test]
 fn test_filter_visible() {
     use crate::utils::io::read_rows;
-    let _rows: Vec<String> = read_rows("data/day08.test.txt".to_string());
+    let _rows: Vec<String> = read_rows(&"data/day08.test.txt".to_string());
     let _mtx: Vec<Vec<i32>> = text2mtx(&_rows);
     let visible_mtx: Vec<Vec<i32>> = filter_visible(&_mtx);
     assert_eq!(visible_mtx[1][1], 1);
@@ -181,7 +181,7 @@ pub fn get_scenic_score(matrix: &Vec<Vec<i32>>, row_idx: usize, col_idx: usize) 
 #[test]
 fn test_get_scenic_score() {
     use crate::utils::io::read_rows;
-    let _rows: Vec<String> = read_rows("data/day08.test.txt".to_string());
+    let _rows: Vec<String> = read_rows(&"data/day08.test.txt".to_string());
     let _mtx: Vec<Vec<i32>> = text2mtx(&_rows);
     assert_eq!(get_scenic_score(&_mtx, 1, 2), 4);
     assert_eq!(get_scenic_score(&_mtx, 3, 2), 8);

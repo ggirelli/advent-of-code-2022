@@ -2,12 +2,12 @@ use crate::utils::io::read_rows;
 use crate::utils::string::find_stretch_of_unique_characters;
 
 pub fn pt1(file_path: String) -> i32 {
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
     find_stretch_of_unique_characters(_rows[0].to_string(), 4)
 }
 
 pub fn pt2(file_path: String) -> i32 {
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
     find_stretch_of_unique_characters(_rows[0].to_string(), 14)
 }
 

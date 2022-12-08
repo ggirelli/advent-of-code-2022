@@ -146,7 +146,7 @@ pub fn commands2fs(_lines: Vec<String>, mut root: Folder) -> (Folder, usize) {
 fn test_commands2fs() {
     use crate::utils::io::read_rows;
 
-    let _rows: Vec<String> = read_rows("data/day07.test.txt".to_string());
+    let _rows: Vec<String> = read_rows(&"data/day07.test.txt".to_string());
     assert_eq!(_rows[0], "$ cd /");
 
     let root: Folder;

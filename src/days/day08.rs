@@ -5,7 +5,7 @@ use crate::utils::matrix::get_scenic_score;
 use crate::utils::matrix::text2mtx;
 
 pub fn pt1(file_path: String) -> usize {
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
     let _mtx: Vec<Vec<i32>> = text2mtx(&_rows);
     let visible_mtx: Vec<Vec<i32>> = filter_visible(&_mtx);
     count_nonzero(&visible_mtx)
@@ -17,7 +17,7 @@ fn test_pt1() {
 }
 
 pub fn pt2(file_path: String) -> usize {
-    let _rows: Vec<String> = read_rows(file_path);
+    let _rows: Vec<String> = read_rows(&file_path);
     let _mtx: Vec<Vec<i32>> = text2mtx(&_rows);
 
     let mut best_scenic_score: usize = 0;

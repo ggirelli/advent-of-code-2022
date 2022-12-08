@@ -1,7 +1,7 @@
 use crate::utils::io::read_rows;
 
 pub fn pt1() {
-    let _rows: Vec<String> = read_rows("data/day01.txt".to_string());
+    let _rows: Vec<String> = read_rows(&"data/day01.txt".to_string());
 
     // Setup informative counters
     let mut row_counter: i32 = 0;
@@ -41,7 +41,7 @@ pub fn pt1() {
 }
 
 pub fn pt2() {
-    let _rows: Vec<String> = read_rows("data/day01.txt".to_string());
+    let _rows: Vec<String> = read_rows(&"data/day01.txt".to_string());
 
     let mut elf_counter: usize = 0;
     let mut elf_calories: Vec<i32> = Vec::new();
