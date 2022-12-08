@@ -149,7 +149,7 @@ fn test_commands2fs() {
     let _rows: Vec<String> = read_rows("data/day07.test.txt".to_string());
     assert_eq!(_rows[0], "$ cd /");
 
-    let mut root: Folder;
+    let root: Folder;
     (root, _) = commands2fs(_rows[1..].to_vec(), Folder::new());
 
     assert_eq!(root.size(), 48381165);
