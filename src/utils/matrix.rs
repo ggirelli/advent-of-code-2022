@@ -126,3 +126,63 @@ fn test_filter_visible() {
     assert_eq!(visible_mtx[3][2], 1);
     assert_eq!(visible_mtx[3][3], 0);
 }
+
+pub fn get_scenic_score(matrix: &Vec<Vec<i32>>, row_idx: usize, col_idx: usize) -> usize {
+    assert!(row_idx < matrix.len());
+    let row: &Vec<i32> = &matrix[row_idx];
+    let col: &Vec<i32> = &get_col(matrix, col_idx);
+    let cell: i32 = matrix[row_idx][col_idx];
+
+    let mut scenic_score: usize = 1;
+
+    // Check left
+    let mut partial_score: usize = 0;
+    for tree_idx in (0..col_idx).rev() {
+        partial_score += 1;
+        if row[tree_idx] >= cell {
+            break;
+        }
+    }
+    scenic_score *= partial_score;
+
+    // Check right
+    partial_score = 0;
+    for tree_idx in (col_idx + 1)..row.len() {
+        partial_score += 1;
+        if row[tree_idx] >= cell {
+            break;
+        }
+    }
+    scenic_score *= partial_score;
+
+    // Check above
+    partial_score = 0;
+    for tree_idx in (0..row_idx).rev() {
+        partial_score += 1;
+        if col[tree_idx] >= cell {
+            break;
+        }
+    }
+    scenic_score *= partial_score;
+
+    // Check below
+    partial_score = 0;
+    for tree_idx in (row_idx + 1)..row.len() {
+        partial_score += 1;
+        if col[tree_idx] >= cell {
+            break;
+        }
+    }
+    scenic_score *= partial_score;
+
+    scenic_score
+}
+
+#[test]
+fn test_get_scenic_score() {
+    use crate::utils::io::read_rows;
+    let _rows: Vec<String> = read_rows("data/day08.test.txt".to_string());
+    let _mtx: Vec<Vec<i32>> = text2mtx(&_rows);
+    assert_eq!(get_scenic_score(&_mtx, 1, 2), 4);
+    assert_eq!(get_scenic_score(&_mtx, 3, 2), 8);
+}
