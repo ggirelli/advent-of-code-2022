@@ -87,9 +87,6 @@ pub fn run(part: i32) {
             );
             overlap_counter
         }
-        _ => {
-            println!("Part {} not found.", part);
-            0
-        }
+        _ => panic!("Part {} not found.", part),
     };
 }

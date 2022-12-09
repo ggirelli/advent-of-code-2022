@@ -143,9 +143,6 @@ pub fn run(part: i32) {
             println!("The top crates are: {}", top_crates);
             0
         }
-        _ => {
-            println!("Part {} not found.", part);
-            0
-        }
+        _ => panic!("Part {} not found.", part),
     };
 }

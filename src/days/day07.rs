@@ -50,9 +50,6 @@ pub fn run(part: i32) {
             println!("Size of the folder to delet is: {}", smallest_folder_size);
             smallest_folder_size
         }
-        _ => {
-            println!("Part {} not found.", part);
-            0
-        }
+        _ => panic!("Part {} not found.", part),
     };
 }

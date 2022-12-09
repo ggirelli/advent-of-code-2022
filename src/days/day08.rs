@@ -49,9 +49,6 @@ pub fn run(part: i32) {
             println!("Best scenic score: {}", scenic_score);
             scenic_score as i32
         }
-        _ => {
-            println!("Part {} not found.", part);
-            0
-        }
+        _ => panic!("Part {} not found.", part),
     };
 }

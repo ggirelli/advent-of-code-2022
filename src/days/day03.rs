@@ -84,9 +84,6 @@ pub fn run(part: i32) {
             println!("The total priority is {}", total_priority);
             total_priority
         }
-        _ => {
-            println!("Part {} not found.", part);
-            0
-        }
+        _ => panic!("Part {} not found.", part),
     };
 }

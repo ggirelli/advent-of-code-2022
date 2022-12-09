@@ -79,6 +79,6 @@ pub fn run(part: i32) {
     match part {
         1 => pt1(),
         2 => pt2(),
-        _ => println!("Part {} not found.", part),
+        _ => panic!("Part {} not found.", part),
     }
 }
