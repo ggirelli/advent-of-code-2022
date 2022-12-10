@@ -20,6 +20,7 @@ fn main() {
             7 => days::day07::run(args[2].parse::<i32>().unwrap()),
             8 => days::day08::run(args[2].parse::<i32>().unwrap()),
             9 => days::day09::run(args[2].parse::<i32>().unwrap()),
+            10 => days::day10::run(args[2].parse::<i32>().unwrap()),
             _ => panic!("Day {} not found.", args[1]),
         }
     }
