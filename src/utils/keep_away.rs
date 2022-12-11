@@ -1,36 +1,38 @@
-fn _parse_starting_items(line: &String) -> Vec<i32> {
+use crate::utils::modulus::Modulus;
+
+fn _parse_starting_item_values(line: &String) -> Vec<u128> {
     assert_eq!(&line[..18], "  Starting items: ");
     line[18..]
         .split(", ")
         .into_iter()
-        .map(|x| x.parse::<i32>().unwrap())
+        .map(|x| x.parse::<u128>().unwrap())
         .collect()
 }
 
 #[test]
-fn test_parse_starting_items() {
+fn test_parse_starting_item_values() {
     assert_eq!(
-        _parse_starting_items(&"  Starting items: 79, 98".to_string()),
+        _parse_starting_item_values(&"  Starting items: 79, 98".to_string()),
         [79, 98].to_vec()
     );
     assert_eq!(
-        _parse_starting_items(&"  Starting items: 54, 65, 75, 74".to_string()),
+        _parse_starting_item_values(&"  Starting items: 54, 65, 75, 74".to_string()),
         [54, 65, 75, 74].to_vec()
     );
     assert_eq!(
-        _parse_starting_items(&"  Starting items: 79, 60, 97".to_string()),
+        _parse_starting_item_values(&"  Starting items: 79, 60, 97".to_string()),
         [79, 60, 97].to_vec()
     );
     assert_eq!(
-        _parse_starting_items(&"  Starting items: 74".to_string()),
+        _parse_starting_item_values(&"  Starting items: 74".to_string()),
         [74].to_vec()
     );
 }
 
 #[test]
 #[should_panic]
-fn test_parse_starting_items_panic() {
-    _parse_starting_items(&"Starting items: 79, 98".to_string());
+fn test_parse_starting_item_values_panic() {
+    _parse_starting_item_values(&"Starting items: 79, 98".to_string());
 }
 
 fn _extract_operation(line: &String) -> String {
@@ -64,9 +66,9 @@ fn test_extract_operation_panic() {
     _extract_operation(&"Operation: new = old * 19".to_string());
 }
 
-fn _parse_test(line: &String) -> i32 {
+fn _parse_test(line: &String) -> u128 {
     assert_eq!(&line[..21], "  Test: divisible by ");
-    line[21..].parse::<i32>().unwrap()
+    line[21..].parse::<u128>().unwrap()
 }
 
 #[test]
@@ -134,13 +136,19 @@ fn test_parse_target_false_panic() {
     _parse_target_false(&"   If true: throw to monkey 0".to_string());
 }
 
-fn _perform_operation(operation_string: &String, n: i32) -> i32 {
+fn _perform_operation(operation_string: &String, n: &mut Modulus) {
     assert!(operation_string.len() >= 13);
 
-    let value: i32;
+    let value: Modulus;
     match &operation_string[12..] {
-        "old" => value = n,
-        _ => value = operation_string[12..].parse::<i32>().unwrap(),
+        "old" => {
+            value = Modulus {
+                modulus: n.modulus,
+                remainder: n.remainder,
+                factor: n.factor,
+            }
+        }
+        _ => value = Modulus::new(&operation_string[12..].parse::<u128>().unwrap(), n.modulus),
     }
 
     let operator_char: char = operation_string
@@ -148,8 +156,8 @@ fn _perform_operation(operation_string: &String, n: i32) -> i32 {
         .nth(10)
         .expect("ERROR: operation string is too short.");
     match operator_char {
-        '*' => return n * value,
-        '+' => return n + value,
+        '*' => n.multiply(value),
+        '+' => n.add(value),
         _ => panic!(
             "ERROR: unrecognized '{}' operation. ({})",
             operator_char, operation_string
@@ -159,24 +167,50 @@ fn _perform_operation(operation_string: &String, n: i32) -> i32 {
 
 #[test]
 fn test_perform_operation() {
-    assert_eq!(_perform_operation(&"new = old * 19".to_string(), 1), 19);
-    assert_eq!(_perform_operation(&"new = old * 19".to_string(), 3), 57);
-    assert_eq!(_perform_operation(&"new = old + 6".to_string(), 1), 7);
-    assert_eq!(_perform_operation(&"new = old + 6".to_string(), 57), 63);
-    assert_eq!(_perform_operation(&"new = old * old".to_string(), 1), 1);
-    assert_eq!(_perform_operation(&"new = old * old".to_string(), 5), 25);
+    let mut item: Modulus;
+    item = Modulus::new(&1, 5);
+    _perform_operation(&"new = old * 19".to_string(), &mut item);
+    assert_eq!(item.result(), 19);
+
+    item = Modulus::new(&3, 5);
+    _perform_operation(&"new = old * 19".to_string(), &mut item);
+    assert_eq!(item.result(), 57);
+
+    item = Modulus::new(&1, 5);
+    _perform_operation(&"new = old + 6".to_string(), &mut item);
+    assert_eq!(item.result(), 7);
+
+    item = Modulus::new(&57, 5);
+    _perform_operation(&"new = old + 6".to_string(), &mut item);
+    assert_eq!(item.result(), 63);
+
+    item = Modulus::new(&1, 5);
+    _perform_operation(&"new = old * old".to_string(), &mut item);
+    assert_eq!(item.result(), 1);
+
+    item = Modulus::new(&5, 5);
+    _perform_operation(&"new = old * old".to_string(), &mut item);
+    assert_eq!(item.result(), 25);
 }
 
 #[test]
 #[should_panic]
 fn test_perform_operation_panic() {
-    _perform_operation(&"new = old * ".to_string(), 1);
+    _perform_operation(&"new = old * ".to_string(), &mut Modulus::new(&1, 5));
+}
+
+fn values2items(_values: &Vec<u128>, modulus: u128) -> Vec<Modulus> {
+    let mut items: Vec<Modulus> = Vec::new();
+    for value in _values {
+        items.push(Modulus::new(value, modulus));
+    }
+    items
 }
 
 pub struct Monkey {
-    pub items: Vec<i32>,
+    pub items: Vec<Modulus>,
     operation: String,
-    test: i32,
+    pub test: u128,
     target_true: usize,
     target_false: usize,
     pub inspection_counter: usize,
@@ -185,26 +219,29 @@ pub struct Monkey {
 impl Monkey {
     pub fn new(_rows: &Vec<&String>) -> Monkey {
         assert_eq!(_rows.len(), 6);
+        let test_value: u128 = _parse_test(&_rows[3]);
         Monkey {
-            items: _parse_starting_items(&_rows[1]),
+            items: values2items(&_parse_starting_item_values(&_rows[1]), test_value),
             operation: _extract_operation(&_rows[2]),
-            test: _parse_test(&_rows[3]),
+            test: test_value,
             target_true: _parse_target_true(&_rows[4]),
             target_false: _parse_target_false(&_rows[5]),
             inspection_counter: 0,
         }
     }
 
-    pub fn inspect_next(&mut self) -> (i32, usize) {
+    pub fn inspect_next(&mut self, manage_worry: bool) -> (Modulus, usize) {
         assert!(self.items.len() > 0);
 
-        let mut worry_level: i32 = self.items.remove(0);
-        worry_level = _perform_operation(&self.operation, worry_level);
-        worry_level /= 3;
+        let mut worry_level: Modulus = self.items.remove(0);
+        _perform_operation(&self.operation, &mut worry_level);
+        if manage_worry {
+            worry_level.divide_n(3);
+        }
 
         self.inspection_counter += 1;
 
-        if worry_level % self.test == 0 {
+        if worry_level.remainder_with_modulus(self.test) == 0 {
             return (worry_level, self.target_true);
         } else {
             return (worry_level, self.target_false);
@@ -217,9 +254,32 @@ fn test_inspect_next() {
     use crate::utils::io::read_rows;
     let _rows: Vec<String> = read_rows(&"data/day11.test.txt".to_string());
     let mut monkeys: Vec<Monkey> = parse_monkeys(&_rows);
-    assert_eq!(monkeys[0].inspect_next(), ((79 * 19) / 3, 3));
-    assert_eq!(monkeys[0].inspect_next(), ((98 * 19) / 3, 3));
-    assert_eq!(monkeys[1].inspect_next(), ((54 + 6) / 3, 0));
+    assert_eq!(
+        monkeys[0].inspect_next(true),
+        (Modulus::new(&(79 * 19 / 3), monkeys[0].test), 3)
+    );
+    assert_eq!(
+        monkeys[0].inspect_next(true),
+        (Modulus::new(&(98 * 19 / 3), monkeys[0].test), 3)
+    );
+    assert_eq!(
+        monkeys[1].inspect_next(true),
+        (Modulus::new(&((54 + 6) / 3), monkeys[1].test), 0)
+    );
+
+    monkeys = parse_monkeys(&_rows);
+    assert_eq!(
+        monkeys[0].inspect_next(false),
+        (Modulus::new(&(79 * 19), monkeys[0].test), 3)
+    );
+    assert_eq!(
+        monkeys[0].inspect_next(false),
+        (Modulus::new(&(98 * 19), monkeys[0].test), 3)
+    );
+    assert_eq!(
+        monkeys[1].inspect_next(false),
+        (Modulus::new(&(54 + 6), monkeys[1].test), 0)
+    );
 }
 
 pub fn parse_monkeys(_rows: &Vec<String>) -> Vec<Monkey> {
@@ -243,7 +303,12 @@ fn test_parse_monkeys() {
     use crate::utils::io::read_rows;
     let _rows: Vec<String> = read_rows(&"data/day11.test.txt".to_string());
     let monkeys: Vec<Monkey> = parse_monkeys(&_rows);
-    assert_eq!(monkeys[0].items, [79, 98].to_vec());
+
+    let mut test_items: Vec<Modulus> = Vec::new();
+    test_items.push(Modulus::new(&79, monkeys[0].test));
+    test_items.push(Modulus::new(&98, monkeys[0].test));
+
+    assert_eq!(monkeys[0].items, test_items);
     assert_eq!(monkeys[1].operation, "new = old + 6");
     assert_eq!(monkeys[2].test, 13);
     assert_eq!(monkeys[3].target_true, 0);
