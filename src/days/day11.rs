@@ -1,39 +1,11 @@
 use crate::utils::io::read_rows;
-use crate::utils::keep_away::parse_monkeys;
-use crate::utils::keep_away::Monkey;
-use crate::utils::modulus::Modulus;
-
-fn run_rounds(_monkeys: &mut Vec<Monkey>, n_rounds: usize, manage_worry: bool) -> i64 {
-    for round_idx in 0..n_rounds {
-        println!("{}", round_idx);
-        for monkey_idx in 0.._monkeys.len() {
-            while _monkeys[monkey_idx].items.len() > 0 {
-                let mut inspection_ans: (Modulus, usize) =
-                    _monkeys[monkey_idx].inspect_next(manage_worry);
-
-                inspection_ans
-                    .0
-                    .change_modulus(_monkeys[inspection_ans.1].test);
-
-                _monkeys[inspection_ans.1].items.push(inspection_ans.0);
-            }
-        }
-    }
-
-    let mut inspection_counters: Vec<i64> = Vec::new();
-    for monkey in _monkeys {
-        inspection_counters.push(monkey.inspection_counter as i64);
-    }
-    inspection_counters.sort();
-    println!("{:?}", inspection_counters);
-    inspection_counters[inspection_counters.len() - 1]
-        * inspection_counters[inspection_counters.len() - 2]
-}
+use crate::utils::keep_away;
+use crate::utils::keep_away2;
 
 pub fn pt1(file_path: String) -> i64 {
     let _rows: Vec<String> = read_rows(&file_path);
-    let mut _monkeys: Vec<Monkey> = parse_monkeys(&_rows);
-    run_rounds(&mut _monkeys, 20, true)
+    let mut _monkeys: Vec<keep_away::Monkey> = keep_away::parse_monkeys(&_rows);
+    keep_away::run_rounds(&mut _monkeys, 20)
 }
 
 #[test]
@@ -43,8 +15,9 @@ fn test_pt1() {
 
 pub fn pt2(file_path: String) -> i64 {
     let _rows: Vec<String> = read_rows(&file_path);
-    let mut _monkeys: Vec<Monkey> = parse_monkeys(&_rows);
-    run_rounds(&mut _monkeys, 10000, false)
+    let modulus_base = keep_away2::update_modulus_base(&_rows, 1);
+    let mut _monkeys: Vec<keep_away2::Monkey> = keep_away2::parse_monkeys(&_rows, &modulus_base);
+    keep_away2::run_rounds(&mut _monkeys, 10000)
 }
 
 #[test]
