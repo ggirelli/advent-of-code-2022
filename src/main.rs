@@ -7,8 +7,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 3 {
-        println!("Please run specifying a day and a part.");
-        println!("e.g., 'cargo run 1 1' for day 01 part 1")
+        panic!("Please specify a day AND a part.\ne.g., 'cargo run 1 1' for day 01 part 1")
     } else {
         match args[1].parse::<i32>().unwrap() {
             1 => days::day01::run(args[2].parse::<i32>().unwrap()),
@@ -22,6 +21,7 @@ fn main() {
             9 => days::day09::run(args[2].parse::<i32>().unwrap()),
             10 => days::day10::run(args[2].parse::<i32>().unwrap()),
             11 => days::day11::run(args[2].parse::<i32>().unwrap()),
+            12 => days::day12::run(args[2].parse::<i32>().unwrap()),
             _ => panic!("Day {} not found.", args[1]),
         }
     }
