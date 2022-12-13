@@ -259,21 +259,21 @@ pub fn tree2path(
 ) -> Vec<(CellCoords, char)> {
     let mut path: Vec<(CellCoords, char)> = [].to_vec();
 
-    let mut parent_idx: usize = 0;
+    let mut parent_idx: i32 = -1;
     for cell_idx in 0..tree[tree.len() - 1].len() {
         if &tree[tree.len() - 1][cell_idx].1 == dst {
-            parent_idx = cell_idx;
+            parent_idx = cell_idx as i32;
         }
     }
-    if parent_idx == 0 {
+    if parent_idx == -1 {
         panic!("Destination not found in the end of the tree");
     }
 
     let mut direction: char = 'E';
     for layer_idx in (0..tree.len()).rev() {
-        path.insert(0, (tree[layer_idx][parent_idx].1.copy(), direction));
-        direction = tree[layer_idx][parent_idx].2;
-        parent_idx = tree[layer_idx][parent_idx].0;
+        path.insert(0, (tree[layer_idx][parent_idx as usize].1.copy(), direction));
+        direction = tree[layer_idx][parent_idx as usize].2;
+        parent_idx = tree[layer_idx][parent_idx as usize].0 as i32;
     }
 
     path
