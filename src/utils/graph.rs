@@ -2,8 +2,8 @@ use crate::utils::matrix;
 
 #[derive(Debug, Clone)]
 pub struct CellCoords {
-    row: usize,
-    col: usize,
+    pub row: usize,
+    pub col: usize,
 }
 
 impl CellCoords {
@@ -25,7 +25,7 @@ fn _test_map() -> Vec<String> {
     ["abc".to_string(), "def".to_string()].to_vec()
 }
 
-fn map2matrix(_rows: &Vec<String>) -> Vec<Vec<char>> {
+pub fn map2matrix(_rows: &Vec<String>) -> Vec<Vec<char>> {
     let mut matrix: Vec<Vec<char>> = Vec::new();
     for row_idx in 0.._rows.len() {
         matrix.push(Vec::new());
@@ -67,7 +67,7 @@ fn test_map_matrix2heights() {
     );
 }
 
-fn find_point(matrix: &Vec<Vec<char>>, needle: char) -> CellCoords {
+pub fn find_point(matrix: &Vec<Vec<char>>, needle: char) -> CellCoords {
     for row_idx in 0..matrix.len() {
         for col_idx in 0..matrix[row_idx].len() {
             if matrix[row_idx][col_idx] == needle {
@@ -87,6 +87,38 @@ fn test_find_point() {
     assert_eq!(find_point(&matrix, 'a'), CellCoords { row: 0, col: 0 });
     assert_eq!(find_point(&matrix, 'c'), CellCoords { row: 0, col: 2 });
     assert_eq!(find_point(&matrix, 'e'), CellCoords { row: 1, col: 1 });
+}
+
+pub fn find_all_points(matrix: &Vec<Vec<char>>, needle: char) -> Vec<CellCoords> {
+    let mut points: Vec<CellCoords> = Vec::new();
+    for row_idx in 0..matrix.len() {
+        for col_idx in 0..matrix[row_idx].len() {
+            if matrix[row_idx][col_idx] == needle {
+                points.push(CellCoords {
+                    row: row_idx,
+                    col: col_idx,
+                });
+            }
+        }
+    }
+    points
+}
+
+#[test]
+fn test_find_all_points() {
+    let matrix: Vec<Vec<char>> = map2matrix(&_test_map());
+    assert_eq!(
+        find_all_points(&matrix, 'a'),
+        [CellCoords { row: 0, col: 0 }].to_vec()
+    );
+    assert_eq!(
+        find_all_points(&matrix, 'c'),
+        [CellCoords { row: 0, col: 2 }].to_vec()
+    );
+    assert_eq!(
+        find_all_points(&matrix, 'e'),
+        [CellCoords { row: 1, col: 1 }].to_vec()
+    );
 }
 
 #[test]
@@ -167,14 +199,16 @@ fn bread_first_search_heights(
     visited: &mut Vec<CellCoords>,
     src: &CellCoords,
     dst: &CellCoords,
+    max_steps: &usize,
 ) -> Vec<Vec<(usize, CellCoords, char)>> {
     let mut tree: Vec<Vec<(usize, CellCoords, char)>> = Vec::new();
+    let mut step_counter: usize = 0;
 
     // Add starting point
     tree.push([(0, (&src).copy(), 'S')].to_vec());
     visited.push((&src).copy());
 
-    while !visited.contains(&&dst) {
+    while (!visited.contains(&&dst)) & (&step_counter <= max_steps) {
         let mut new_tree_layer: Vec<(usize, CellCoords, char)> = Vec::new();
         for parent_idx in 0..tree[tree.len() - 1].len() {
             let parent_ref: &CellCoords = &tree[tree.len() - 1][parent_idx].1;
@@ -186,12 +220,15 @@ fn bread_first_search_heights(
             }
         }
         tree.push(new_tree_layer);
+        step_counter += 1;
     }
     tree
 }
 
-pub fn explore_map(_rows: &Vec<String>) -> Vec<Vec<(usize, CellCoords, char)>> {
-    let matrix: Vec<Vec<char>> = map2matrix(_rows);
+pub fn explore_map(
+    matrix: &Vec<Vec<char>>,
+    max_steps: &usize,
+) -> (Vec<Vec<(usize, CellCoords, char)>>, Vec<CellCoords>) {
     let mut heights: Vec<Vec<i32>> = map_matrix2heights(&matrix);
 
     let source: CellCoords = find_point(&matrix, 'S');
@@ -203,25 +240,17 @@ pub fn explore_map(_rows: &Vec<String>) -> Vec<Vec<(usize, CellCoords, char)>> {
 
     let mut visited: Vec<CellCoords> = Vec::new();
     let tree: Vec<Vec<(usize, CellCoords, char)>> =
-        bread_first_search_heights(&heights, &mut visited, &source, &destination);
+        bread_first_search_heights(&heights, &mut visited, &source, &destination, &max_steps);
 
-    tree
+    //print_path(&matrix, &tree, &destination);
+    (tree, visited)
 }
 
-fn _print_path(
-    heights: &Vec<Vec<i32>>,
+pub fn tree2path(
     tree: &Vec<Vec<(usize, CellCoords, char)>>,
     dst: &CellCoords,
-) {
-    let mut map_vec: Vec<Vec<char>> = Vec::new();
-    for row_idx in 0..heights.len() {
-        map_vec.push(Vec::new());
-        for _ in 0..heights[row_idx].len() {
-            map_vec[row_idx].push('.');
-        }
-    }
-
-    map_vec[dst.row][dst.col] = 'E';
+) -> Vec<(CellCoords, char)> {
+    let mut path: Vec<(CellCoords, char)> = [(dst.copy(), 'E')].to_vec();
 
     let mut parent_idx: usize = 0;
     for cell_idx in 0..tree[tree.len() - 1].len() {
@@ -230,10 +259,47 @@ fn _print_path(
         }
     }
 
-    for layer_idx in (1..tree.len()).rev() {
-        let parent: &CellCoords = &tree[layer_idx - 1][tree[layer_idx][parent_idx].0].1;
-        map_vec[parent.row][parent.col] = tree[layer_idx][parent_idx].2;
+    let mut direction: char = 'E';
+    for layer_idx in (0..tree.len()).rev() {
+        path.insert(0, (tree[layer_idx][parent_idx].1.copy(), direction));
+        direction = tree[layer_idx][parent_idx].2;
         parent_idx = tree[layer_idx][parent_idx].0;
+    }
+
+    path
+}
+
+pub fn closest_step(
+    path: &Vec<(CellCoords, char)>,
+    matrix: &Vec<Vec<char>>,
+    needle: char,
+) -> usize {
+    for step_idx in (0..path.len()).rev() {
+        if matrix[path[step_idx].0.row][path[step_idx].0.col] == needle {
+            return path.len() - step_idx - 1;
+        }
+    }
+    path.len() - 1
+}
+
+pub fn print_path(
+    matrix: &Vec<Vec<char>>,
+    tree: &Vec<Vec<(usize, CellCoords, char)>>,
+    dst: &CellCoords,
+) {
+    let mut map_vec: Vec<Vec<char>> = Vec::new();
+    for row_idx in 0..matrix.len() {
+        map_vec.push(Vec::new());
+        for _ in 0..matrix[row_idx].len() {
+            map_vec[row_idx].push('.');
+        }
+    }
+
+    map_vec[dst.row][dst.col] = 'E';
+
+    let path: Vec<(CellCoords, char)> = tree2path(&tree, dst);
+    for (step, direction) in path {
+        map_vec[step.row][step.col] = direction;
     }
 
     let mut map_string: String = String::new();
@@ -251,6 +317,8 @@ fn _print_path(
 fn test_explore_map() {
     use crate::utils::io::read_rows;
     let _rows: Vec<String> = read_rows(&"data/day12.test.txt".to_string());
-    let tree: Vec<Vec<(usize, CellCoords, char)>> = explore_map(&_rows);
+    let matrix: Vec<Vec<char>> = map2matrix(&_rows);
+    let tree: Vec<Vec<(usize, CellCoords, char)>>;
+    (tree, _) = explore_map(&matrix, &10000);
     assert_eq!(tree.len() - 1, 31);
 }
