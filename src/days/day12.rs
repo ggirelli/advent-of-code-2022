@@ -1,4 +1,3 @@
-use crate::utils::graph::Tree;
 use crate::utils::graph::closest_step;
 use crate::utils::graph::explore_map;
 use crate::utils::graph::find_all_points;
@@ -7,6 +6,7 @@ use crate::utils::graph::map2matrix;
 use crate::utils::graph::print_path;
 use crate::utils::graph::tree2path;
 use crate::utils::graph::CellCoords;
+use crate::utils::graph::Tree;
 use crate::utils::io::read_rows;
 
 pub fn pt1(file_path: String) -> usize {

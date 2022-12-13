@@ -196,7 +196,7 @@ fn test_find_neighbors() {
 pub struct TreeStep {
     parent_idx: usize,
     cell: CellCoords,
-    from_direction: char
+    from_direction: char,
 }
 
 pub struct Tree {
@@ -216,11 +216,15 @@ fn bread_first_search_heights(
     dst: &CellCoords,
     max_steps: &usize,
 ) -> Tree {
-    let mut tree: Tree = Tree{layers: Vec::new()};
+    let mut tree: Tree = Tree { layers: Vec::new() };
     let mut step_counter: usize = 0;
 
     // Add starting point
-    tree.layers.push(vec![TreeStep{parent_idx:0, cell:src.copy(), from_direction:'S'}]);
+    tree.layers.push(vec![TreeStep {
+        parent_idx: 0,
+        cell: src.copy(),
+        from_direction: 'S',
+    }]);
     visited.push(src.copy());
 
     while (!visited.contains(dst)) & (&step_counter <= max_steps) {
@@ -230,7 +234,11 @@ fn bread_first_search_heights(
             for (neighbor, direction) in find_neighbors(heights, parent_ref) {
                 if !visited.contains(&neighbor) {
                     visited.push(neighbor.copy());
-                    new_tree_layer.push(TreeStep{parent_idx:parent_idx, cell:neighbor.copy(), from_direction:direction});
+                    new_tree_layer.push(TreeStep {
+                        parent_idx: parent_idx,
+                        cell: neighbor.copy(),
+                        from_direction: direction,
+                    });
                 }
             }
         }
@@ -240,10 +248,7 @@ fn bread_first_search_heights(
     tree
 }
 
-pub fn explore_map(
-    matrix: &Vec<Vec<char>>,
-    max_steps: &usize,
-) -> (Tree, Vec<CellCoords>) {
+pub fn explore_map(matrix: &Vec<Vec<char>>, max_steps: &usize) -> (Tree, Vec<CellCoords>) {
     let mut heights: Vec<Vec<i32>> = map_matrix2heights(&matrix);
 
     let source: CellCoords = find_point(&matrix, 'S');
@@ -261,10 +266,7 @@ pub fn explore_map(
     (tree, visited)
 }
 
-pub fn tree2path(
-    tree: &Tree,
-    dst: &CellCoords,
-) -> Vec<(CellCoords, char)> {
+pub fn tree2path(tree: &Tree, dst: &CellCoords) -> Vec<(CellCoords, char)> {
     let mut path: Vec<(CellCoords, char)> = [].to_vec();
 
     let mut parent_idx: i32 = -1;
@@ -281,7 +283,10 @@ pub fn tree2path(
     for layer_idx in (0..tree.len()).rev() {
         path.insert(
             0,
-            (tree.layers[layer_idx][parent_idx as usize].cell.copy(), direction),
+            (
+                tree.layers[layer_idx][parent_idx as usize].cell.copy(),
+                direction,
+            ),
         );
         direction = tree.layers[layer_idx][parent_idx as usize].from_direction;
         parent_idx = tree.layers[layer_idx][parent_idx as usize].parent_idx as i32;
@@ -303,11 +308,7 @@ pub fn closest_step(
     path.len() - 1
 }
 
-pub fn print_path(
-    matrix: &Vec<Vec<char>>,
-    tree: &Tree,
-    dst: &CellCoords,
-) {
+pub fn print_path(matrix: &Vec<Vec<char>>, tree: &Tree, dst: &CellCoords) {
     let mut map_vec: Vec<Vec<char>> = Vec::new();
     for row_idx in 0..matrix.len() {
         map_vec.push(Vec::new());
