@@ -97,31 +97,13 @@ fn _parse_target_false(line: &str) -> usize {
 
 #[test]
 fn test_parse_target() {
-    assert_eq!(
-        _parse_target_true("    If true: throw to monkey 2"),
-        2
-    );
-    assert_eq!(
-        _parse_target_true("    If true: throw to monkey 1"),
-        1
-    );
-    assert_eq!(
-        _parse_target_true("    If true: throw to monkey 0"),
-        0
-    );
+    assert_eq!(_parse_target_true("    If true: throw to monkey 2"), 2);
+    assert_eq!(_parse_target_true("    If true: throw to monkey 1"), 1);
+    assert_eq!(_parse_target_true("    If true: throw to monkey 0"), 0);
 
-    assert_eq!(
-        _parse_target_false("    If false: throw to monkey 3"),
-        3
-    );
-    assert_eq!(
-        _parse_target_false("    If false: throw to monkey 0"),
-        0
-    );
-    assert_eq!(
-        _parse_target_false("    If false: throw to monkey 1"),
-        1
-    );
+    assert_eq!(_parse_target_false("    If false: throw to monkey 3"), 3);
+    assert_eq!(_parse_target_false("    If false: throw to monkey 0"), 0);
+    assert_eq!(_parse_target_false("    If false: throw to monkey 1"), 1);
 }
 
 #[test]
