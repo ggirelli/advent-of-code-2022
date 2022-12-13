@@ -199,7 +199,7 @@ fn test_perform_operation_panic() {
 fn values2items(_values: &Vec<u64>, modulus: &u64) -> Vec<Modulus> {
     let mut items: Vec<Modulus> = Vec::new();
     for value in _values {
-        items.push(Modulus::new(value, modulus + 0));
+        items.push(Modulus::new(value, *modulus));
     }
     items
 }
@@ -286,7 +286,10 @@ fn test_parse_monkeys() {
     let modulus_base = update_modulus_base(&_rows, 1);
     let monkeys: Vec<Monkey> = parse_monkeys(&_rows, &modulus_base);
 
-    let test_items: Vec<Modulus> = vec![Modulus::new(&79, modulus_base),Modulus::new(&98, modulus_base)];
+    let test_items: Vec<Modulus> = vec![
+        Modulus::new(&79, modulus_base),
+        Modulus::new(&98, modulus_base),
+    ];
 
     assert_eq!(monkeys[0].items, test_items);
     assert_eq!(monkeys[1].operation, "new = old + 6");

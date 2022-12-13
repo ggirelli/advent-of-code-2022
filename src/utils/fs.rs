@@ -1,22 +1,22 @@
 use std::collections::HashMap;
 
-fn line_is_command(line: &String) -> bool {
-    line.chars().nth(0).unwrap() == '$'
+fn line_is_command(line: &str) -> bool {
+    line.chars().next().unwrap() == '$'
 }
 
 #[test]
 fn test_line_is_command() {
-    assert_eq!(line_is_command(&"$ ls".to_string()), true);
-    assert_eq!(line_is_command(&"dir a".to_string()), false);
+    assert!(line_is_command(&"$ ls".to_string()));
+    assert!(!line_is_command(&"dir a".to_string()));
 }
 
 pub fn parse_command(line: &String) -> [String; 2] {
     assert!(line_is_command(line));
 
-    let command_parts: Vec<String> = line[2..].split(" ").into_iter().map(String::from).collect();
+    let command_parts: Vec<String> = line[2..].split(' ').into_iter().map(String::from).collect();
     match command_parts.len() {
-        1 => return [command_parts[0].to_string(), "".to_string()],
-        2 => return [command_parts[0].to_string(), command_parts[1].to_string()],
+        1 => [command_parts[0].to_string(), "".to_string()],
+        2 => [command_parts[0].to_string(), command_parts[1].to_string()],
         _ => panic!("ERROR: too many command parts '{}'", line),
     }
 }
@@ -123,7 +123,7 @@ pub fn commands2fs(_lines: Vec<String>, mut root: Folder) -> (Folder, usize) {
                 _ => panic!("ERROR: unrecognized command line '{}'", line),
             }
         } else {
-            let parsed: Vec<String> = line.split(" ").into_iter().map(String::from).collect();
+            let parsed: Vec<String> = line.split(' ').into_iter().map(String::from).collect();
 
             match parsed[0].as_str() {
                 "dir" => {

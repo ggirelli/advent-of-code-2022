@@ -1,7 +1,7 @@
 use crate::utils::geom::calc_dist_two_points;
 use crate::utils::io::read_rows;
 
-fn parse_steps(line: &String) -> i32 {
+fn parse_steps(line: &str) -> i32 {
     line[2..].parse::<i32>().unwrap()
 }
 
@@ -55,7 +55,7 @@ fn update_tail_position(head: &(i32, i32), mut tail: (i32, i32)) -> (i32, i32) {
         if head.0 - tail.0 < 0 {
             tail.0 -= 1;
         }
-    } else if head_tail_dist > (2 as f32).powf(0.5) {
+    } else if head_tail_dist > (2_f32).powf(0.5) {
         if head.0 - tail.0 > 0 {
             tail.0 += 1;
         }
@@ -82,7 +82,7 @@ pub fn pt1(file_path: String) -> usize {
         assert!(row.len() >= 3);
 
         let steps: i32 = parse_steps(&row);
-        let direction: char = row.chars().nth(0).expect("Expected a character.");
+        let direction: char = row.chars().next().expect("Expected a character.");
 
         for _ in 0..steps {
             head_position = update_position(head_position, direction);
@@ -118,7 +118,7 @@ pub fn pt2(file_path: String) -> usize {
         assert!(row.len() >= 3);
 
         let steps: i32 = parse_steps(&row);
-        let direction: char = row.chars().nth(0).expect("Expected a character.");
+        let direction: char = row.chars().next().expect("Expected a character.");
 
         for _ in 0..steps {
             chain_positions[0] = update_position(chain_positions[0], direction);

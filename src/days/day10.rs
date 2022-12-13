@@ -1,6 +1,6 @@
 use crate::utils::io::read_rows;
 
-fn extract_values(line: &String) -> Vec<i32> {
+fn extract_values(line: &str) -> Vec<i32> {
     let mut values: Vec<i32> = Vec::new();
     values.push(0);
 

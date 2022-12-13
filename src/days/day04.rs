@@ -5,7 +5,7 @@ use crate::utils::vec::is_subset_i32;
 fn assignment2sections(assignment: String) -> Vec<i32> {
     let mut sections: Vec<i32> = Vec::new();
     let boundaries: Vec<i32> = assignment
-        .split("-")
+        .split('-')
         .into_iter()
         .map(|x| x.parse::<i32>().unwrap())
         .collect();
@@ -20,7 +20,7 @@ pub fn pt1(file_path: String) -> i32 {
 
     let mut subset_pair_counter: i32 = 0;
     for row in _rows {
-        let elf_assignments: Vec<String> = row.split(",").into_iter().map(String::from).collect();
+        let elf_assignments: Vec<String> = row.split(',').into_iter().map(String::from).collect();
         let first_elf_sections: Vec<i32> = assignment2sections(elf_assignments[0].to_string());
         let second_elf_sections: Vec<i32> = assignment2sections(elf_assignments[1].to_string());
 
@@ -50,7 +50,7 @@ pub fn pt2(file_path: String) -> i32 {
 
     let mut overlap_pair_counter: i32 = 0;
     for row in _rows {
-        let elf_assignments: Vec<String> = row.split(",").into_iter().map(String::from).collect();
+        let elf_assignments: Vec<String> = row.split(',').into_iter().map(String::from).collect();
         let first_elf_sections: Vec<i32> = assignment2sections(elf_assignments[0].to_string());
         let second_elf_sections: Vec<i32> = assignment2sections(elf_assignments[1].to_string());
 

@@ -11,7 +11,7 @@ fn parse_crate_stacks(_rows: &Vec<String>) -> Vec<String> {
 
     // Populate stacks
     for row in _rows {
-        if row.len() == 0 {
+        if row.is_empty() {
             // This means the stacks are finished
             return crate_stacks;
         }
@@ -54,9 +54,9 @@ pub fn pt1(file_path: String) -> String {
     for row in _rows {
         if !passed_stack_def {
             // skip stack definition
-            passed_stack_def = row.len() == 0;
+            passed_stack_def = row.is_empty();
         } else {
-            let instructions: Vec<String> = row.split(" ").into_iter().map(String::from).collect();
+            let instructions: Vec<String> = row.split(' ').into_iter().map(String::from).collect();
             let quantity: usize = instructions[1].parse::<usize>().unwrap();
             let from_idx: usize = instructions[3].parse::<usize>().unwrap() - 1;
             let to_idx: usize = instructions[5].parse::<usize>().unwrap() - 1;
@@ -77,7 +77,7 @@ pub fn pt1(file_path: String) -> String {
     // Select top crates
     let mut top_crates: String = String::new();
     for stack in crate_stacks {
-        top_crates.push(stack.chars().nth(0).unwrap());
+        top_crates.push(stack.chars().next().unwrap());
     }
 
     top_crates
@@ -98,9 +98,9 @@ pub fn pt2(file_path: String) -> String {
     for row in _rows {
         if !passed_stack_def {
             // skip stack definition
-            passed_stack_def = row.len() == 0;
+            passed_stack_def = row.is_empty();
         } else {
-            let instructions: Vec<String> = row.split(" ").into_iter().map(String::from).collect();
+            let instructions: Vec<String> = row.split(' ').into_iter().map(String::from).collect();
             let quantity: usize = instructions[1].parse::<usize>().unwrap();
             let from_idx: usize = instructions[3].parse::<usize>().unwrap() - 1;
             let to_idx: usize = instructions[5].parse::<usize>().unwrap() - 1;
@@ -119,7 +119,7 @@ pub fn pt2(file_path: String) -> String {
     // Select top crates
     let mut top_crates: String = String::new();
     for stack in crate_stacks {
-        top_crates.push(stack.chars().nth(0).unwrap());
+        top_crates.push(stack.chars().next().unwrap());
     }
 
     top_crates

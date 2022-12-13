@@ -5,7 +5,7 @@ pub fn pt1(file_path: String) -> i32 {
 
     let mut total_score: i32 = 0;
     for row in _rows {
-        let moves: Vec<&str> = row.split(" ").collect();
+        let moves: Vec<&str> = row.split(' ').collect();
 
         let mut score: i32 = 0;
 
@@ -29,7 +29,7 @@ pub fn pt1(file_path: String) -> i32 {
         total_score += score;
     }
 
-    return total_score;
+    total_score
 }
 
 #[test]
@@ -43,25 +43,25 @@ pub fn pt2(file_path: String) -> i32 {
 
     let mut total_score = 0;
     for row in _rows {
-        let moves: Vec<&str> = row.split(" ").collect();
+        let moves: Vec<&str> = row.split(' ').collect();
 
         let mut score: i32 = 0;
 
         match moves[0] {
             "A" => match moves[1] {
-                "X" => score += 0 + 3,
+                "X" => score += 3,
                 "Y" => score += 3 + 1,
                 "Z" => score += 6 + 2,
                 _ => {}
             },
             "B" => match moves[1] {
-                "X" => score += 0 + 1,
+                "X" => score += 1,
                 "Y" => score += 3 + 2,
                 "Z" => score += 6 + 3,
                 _ => {}
             },
             "C" => match moves[1] {
-                "X" => score += 0 + 2,
+                "X" => score += 2,
                 "Y" => score += 3 + 3,
                 "Z" => score += 6 + 1,
                 _ => {}
@@ -72,7 +72,7 @@ pub fn pt2(file_path: String) -> i32 {
         total_score += score;
     }
 
-    return total_score;
+    total_score
 }
 
 #[test]

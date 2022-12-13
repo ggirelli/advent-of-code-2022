@@ -10,8 +10,8 @@ pub struct CellCoords {
 impl CellCoords {
     pub fn copy(&self) -> CellCoords {
         CellCoords {
-            row: self.row + 0,
-            col: self.col + 0,
+            row: self.row,
+            col: self.col,
         }
     }
 }
@@ -76,8 +76,8 @@ fn test_map_matrix2heights() {
 
 pub fn find_point(matrix: &Vec<Vec<char>>, needle: char) -> CellCoords {
     for row_idx in 0..matrix.len() {
-        for col_idx in 0..matrix[row_idx].len() {
-            if matrix[row_idx][col_idx] == needle {
+        for (col_idx, item) in matrix[row_idx].iter().enumerate() {
+            if item == &needle {
                 return CellCoords {
                     row: row_idx,
                     col: col_idx,
@@ -99,8 +99,8 @@ fn test_find_point() {
 pub fn find_all_points(matrix: &Vec<Vec<char>>, needle: char) -> Vec<CellCoords> {
     let mut points: Vec<CellCoords> = Vec::new();
     for row_idx in 0..matrix.len() {
-        for col_idx in 0..matrix[row_idx].len() {
-            if matrix[row_idx][col_idx] == needle {
+        for (col_idx, item) in matrix[row_idx].iter().enumerate() {
+            if item == &needle {
                 points.push(CellCoords {
                     row: row_idx,
                     col: col_idx,
@@ -136,53 +136,45 @@ fn test_find_point_panic() {
 
 fn find_neighbors(heights: &Vec<Vec<i32>>, src: &CellCoords) -> Vec<(CellCoords, char)> {
     let mut neighbors: Vec<(CellCoords, char)> = Vec::new();
-    if heights.len() == 0 {
+    if heights.is_empty() {
         return neighbors;
     }
     let src_value: i32 = heights[src.row][src.col];
-    if src.row > 0 {
-        if heights[src.row - 1][src.col] <= (src_value + 1) {
-            neighbors.push((
-                CellCoords {
-                    row: src.row - 1,
-                    col: src.col,
-                },
-                '^',
-            ));
-        }
+    if (src.row > 0) && (heights[src.row - 1][src.col] <= (src_value + 1)) {
+        neighbors.push((
+            CellCoords {
+                row: src.row - 1,
+                col: src.col,
+            },
+            '^',
+        ));
     }
-    if src.row < (heights.len() - 1) {
-        if heights[src.row + 1][src.col] <= (src_value + 1) {
-            neighbors.push((
-                CellCoords {
-                    row: src.row + 1,
-                    col: src.col,
-                },
-                'v',
-            ));
-        }
+    if (src.row < (heights.len() - 1)) && (heights[src.row + 1][src.col] <= (src_value + 1)) {
+        neighbors.push((
+            CellCoords {
+                row: src.row + 1,
+                col: src.col,
+            },
+            'v',
+        ));
     }
-    if src.col > 0 {
-        if heights[src.row][src.col - 1] <= (src_value + 1) {
-            neighbors.push((
-                CellCoords {
-                    row: src.row,
-                    col: src.col - 1,
-                },
-                '<',
-            ));
-        }
+    if (src.col > 0) && (heights[src.row][src.col - 1] <= (src_value + 1)) {
+        neighbors.push((
+            CellCoords {
+                row: src.row,
+                col: src.col - 1,
+            },
+            '<',
+        ));
     }
-    if src.col < (heights[0].len() - 1) {
-        if heights[src.row][src.col + 1] <= (src_value + 1) {
-            neighbors.push((
-                CellCoords {
-                    row: src.row,
-                    col: src.col + 1,
-                },
-                '>',
-            ));
-        }
+    if (src.col < (heights[0].len() - 1)) && (heights[src.row][src.col + 1] <= (src_value + 1)) {
+        neighbors.push((
+            CellCoords {
+                row: src.row,
+                col: src.col + 1,
+            },
+            '>',
+        ));
     }
     neighbors
 }
@@ -201,32 +193,48 @@ fn test_find_neighbors() {
     );
 }
 
+pub struct TreeStep {
+    parent_idx: usize,
+    cell: CellCoords,
+    from_direction: char
+}
+
+pub struct Tree {
+    layers: Vec<Vec<TreeStep>>,
+}
+
+impl Tree {
+    pub fn len(&self) -> usize {
+        self.layers.len()
+    }
+}
+
 fn bread_first_search_heights(
     heights: &Vec<Vec<i32>>,
     visited: &mut Vec<CellCoords>,
     src: &CellCoords,
     dst: &CellCoords,
     max_steps: &usize,
-) -> Vec<Vec<(usize, CellCoords, char)>> {
-    let mut tree: Vec<Vec<(usize, CellCoords, char)>> = Vec::new();
+) -> Tree {
+    let mut tree: Tree = Tree{layers: Vec::new()};
     let mut step_counter: usize = 0;
 
     // Add starting point
-    tree.push([(0, (&src).copy(), 'S')].to_vec());
-    visited.push((&src).copy());
+    tree.layers.push(vec![TreeStep{parent_idx:0, cell:src.copy(), from_direction:'S'}]);
+    visited.push(src.copy());
 
-    while (!visited.contains(&&dst)) & (&step_counter <= max_steps) {
-        let mut new_tree_layer: Vec<(usize, CellCoords, char)> = Vec::new();
-        for parent_idx in 0..tree[tree.len() - 1].len() {
-            let parent_ref: &CellCoords = &tree[tree.len() - 1][parent_idx].1;
-            for (neighbor, direction) in find_neighbors(&heights, parent_ref) {
+    while (!visited.contains(dst)) & (&step_counter <= max_steps) {
+        let mut new_tree_layer: Vec<TreeStep> = Vec::new();
+        for parent_idx in 0..tree.layers[tree.len() - 1].len() {
+            let parent_ref: &CellCoords = &tree.layers[tree.len() - 1][parent_idx].cell;
+            for (neighbor, direction) in find_neighbors(heights, parent_ref) {
                 if !visited.contains(&neighbor) {
-                    visited.push((&neighbor).copy());
-                    new_tree_layer.push((parent_idx, (&neighbor).copy(), direction));
+                    visited.push(neighbor.copy());
+                    new_tree_layer.push(TreeStep{parent_idx:parent_idx, cell:neighbor.copy(), from_direction:direction});
                 }
             }
         }
-        tree.push(new_tree_layer);
+        tree.layers.push(new_tree_layer);
         step_counter += 1;
     }
     tree
@@ -235,7 +243,7 @@ fn bread_first_search_heights(
 pub fn explore_map(
     matrix: &Vec<Vec<char>>,
     max_steps: &usize,
-) -> (Vec<Vec<(usize, CellCoords, char)>>, Vec<CellCoords>) {
+) -> (Tree, Vec<CellCoords>) {
     let mut heights: Vec<Vec<i32>> = map_matrix2heights(&matrix);
 
     let source: CellCoords = find_point(&matrix, 'S');
@@ -246,7 +254,7 @@ pub fn explore_map(
     heights[destination.row][destination.col] = matrix::max(&heights, 'z' as i32);
 
     let mut visited: Vec<CellCoords> = Vec::new();
-    let tree: Vec<Vec<(usize, CellCoords, char)>> =
+    let tree: Tree =
         bread_first_search_heights(&heights, &mut visited, &source, &destination, &max_steps);
 
     //print_path(&matrix, &tree, &destination);
@@ -254,14 +262,14 @@ pub fn explore_map(
 }
 
 pub fn tree2path(
-    tree: &Vec<Vec<(usize, CellCoords, char)>>,
+    tree: &Tree,
     dst: &CellCoords,
 ) -> Vec<(CellCoords, char)> {
     let mut path: Vec<(CellCoords, char)> = [].to_vec();
 
     let mut parent_idx: i32 = -1;
-    for cell_idx in 0..tree[tree.len() - 1].len() {
-        if &tree[tree.len() - 1][cell_idx].1 == dst {
+    for cell_idx in 0..tree.layers[tree.len() - 1].len() {
+        if &tree.layers[tree.len() - 1][cell_idx].cell == dst {
             parent_idx = cell_idx as i32;
         }
     }
@@ -271,9 +279,12 @@ pub fn tree2path(
 
     let mut direction: char = 'E';
     for layer_idx in (0..tree.len()).rev() {
-        path.insert(0, (tree[layer_idx][parent_idx as usize].1.copy(), direction));
-        direction = tree[layer_idx][parent_idx as usize].2;
-        parent_idx = tree[layer_idx][parent_idx as usize].0 as i32;
+        path.insert(
+            0,
+            (tree.layers[layer_idx][parent_idx as usize].cell.copy(), direction),
+        );
+        direction = tree.layers[layer_idx][parent_idx as usize].from_direction;
+        parent_idx = tree.layers[layer_idx][parent_idx as usize].parent_idx as i32;
     }
 
     path
@@ -294,7 +305,7 @@ pub fn closest_step(
 
 pub fn print_path(
     matrix: &Vec<Vec<char>>,
-    tree: &Vec<Vec<(usize, CellCoords, char)>>,
+    tree: &Tree,
     dst: &CellCoords,
 ) {
     let mut map_vec: Vec<Vec<char>> = Vec::new();
@@ -328,7 +339,7 @@ fn test_explore_map() {
     use crate::utils::io::read_rows;
     let _rows: Vec<String> = read_rows(&"data/day12.test.txt".to_string());
     let matrix: Vec<Vec<char>> = map2matrix(&_rows);
-    let tree: Vec<Vec<(usize, CellCoords, char)>>;
+    let tree: Tree;
     (tree, _) = explore_map(&matrix, &10000);
     assert_eq!(tree.len() - 1, 31);
 }

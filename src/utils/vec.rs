@@ -10,24 +10,19 @@ pub fn is_subset_i32(first: &Vec<i32>, second: &Vec<i32>) -> bool {
 
 #[test]
 fn test_is_subset_i32() {
-    assert!(
-        is_subset_i32(&Vec::from([0, 1, 2, 3]), &Vec::from([0, 1, 2, 3]))
-    );
-    assert!(
-        is_subset_i32(
-            &Vec::from([3, 4, 5, 6, 7]),
-            &Vec::from([2, 3, 4, 5, 6, 7, 8])
-        )
-    );
-    assert!(
-        !is_subset_i32(&Vec::from([1, 2, 3]), &Vec::from([0, 1, 2]))
-    );
-    assert!(
-        !is_subset_i32(
-            &Vec::from([2, 3, 4, 5, 6, 7, 8]),
-            &Vec::from([3, 4, 5, 6, 7])
-        )
-    );
+    assert!(is_subset_i32(
+        &Vec::from([0, 1, 2, 3]),
+        &Vec::from([0, 1, 2, 3])
+    ));
+    assert!(is_subset_i32(
+        &Vec::from([3, 4, 5, 6, 7]),
+        &Vec::from([2, 3, 4, 5, 6, 7, 8])
+    ));
+    assert!(!is_subset_i32(&Vec::from([1, 2, 3]), &Vec::from([0, 1, 2])));
+    assert!(!is_subset_i32(
+        &Vec::from([2, 3, 4, 5, 6, 7, 8]),
+        &Vec::from([3, 4, 5, 6, 7])
+    ));
 }
 
 pub fn do_overlap_i32(first: &Vec<i32>, second: &[i32]) -> bool {
@@ -41,27 +36,23 @@ pub fn do_overlap_i32(first: &Vec<i32>, second: &[i32]) -> bool {
 
 #[test]
 fn test_do_overlap_i32() {
-    assert!(
-        do_overlap_i32(&Vec::from([0, 1, 2, 3]), &Vec::from([0, 1, 2, 3]))
-    );
-    assert!(
-        do_overlap_i32(
-            &Vec::from([3, 4, 5, 6, 7]),
-            &Vec::from([2, 3, 4, 5, 6, 7, 8])
-        )
-    );
-    assert!(
-        do_overlap_i32(&Vec::from([1, 2, 3]), &Vec::from([0, 1, 2]))
-    );
-    assert!(
-        do_overlap_i32(
-            &Vec::from([2, 3, 4, 5, 6, 7, 8]),
-            &Vec::from([3, 4, 5, 6, 7])
-        )
-    );
-    assert!(
-        !do_overlap_i32(&Vec::from([2]), &Vec::from([3, 4, 5, 6, 7]))
-    );
+    assert!(do_overlap_i32(
+        &Vec::from([0, 1, 2, 3]),
+        &Vec::from([0, 1, 2, 3])
+    ));
+    assert!(do_overlap_i32(
+        &Vec::from([3, 4, 5, 6, 7]),
+        &Vec::from([2, 3, 4, 5, 6, 7, 8])
+    ));
+    assert!(do_overlap_i32(&Vec::from([1, 2, 3]), &Vec::from([0, 1, 2])));
+    assert!(do_overlap_i32(
+        &Vec::from([2, 3, 4, 5, 6, 7, 8]),
+        &Vec::from([3, 4, 5, 6, 7])
+    ));
+    assert!(!do_overlap_i32(
+        &Vec::from([2]),
+        &Vec::from([3, 4, 5, 6, 7])
+    ));
 }
 
 pub fn any_ge(vec: &Vec<i32>, thr: i32) -> bool {

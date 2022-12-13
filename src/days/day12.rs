@@ -1,3 +1,4 @@
+use crate::utils::graph::Tree;
 use crate::utils::graph::closest_step;
 use crate::utils::graph::explore_map;
 use crate::utils::graph::find_all_points;
@@ -11,7 +12,7 @@ use crate::utils::io::read_rows;
 pub fn pt1(file_path: String) -> usize {
     let _rows: Vec<String> = read_rows(&file_path);
     let matrix: Vec<Vec<char>> = map2matrix(&_rows);
-    let tree: Vec<Vec<(usize, CellCoords, char)>>;
+    let tree: Tree;
     (tree, _) = explore_map(&matrix, &10000);
     let destination: &CellCoords = &find_point(&matrix, 'E');
     print_path(&matrix, &tree, destination);
@@ -30,7 +31,7 @@ pub fn pt2(file_path: String) -> usize {
     let mut current_start: &CellCoords = &find_point(&matrix, 'S');
     let destination: &CellCoords = &find_point(&matrix, 'E');
 
-    let mut tree: Vec<Vec<(usize, CellCoords, char)>>;
+    let mut tree: Tree;
     let mut global_visited: Vec<CellCoords> = Vec::new();
     let mut current_visited: Vec<CellCoords>;
 
@@ -38,14 +39,13 @@ pub fn pt2(file_path: String) -> usize {
     let mut current_tree_length: usize;
 
     let _start_points: Vec<CellCoords> = find_all_points(&matrix, 'a');
-    for point_idx in 0.._start_points.len() {
-        print!("{}...", point_idx);
-        if global_visited.contains(&_start_points[point_idx]) {
+    for start_point in &_start_points {
+        if global_visited.contains(start_point) {
             continue;
         }
 
         matrix[current_start.row][current_start.col] = 'a';
-        current_start = &_start_points[point_idx];
+        current_start = start_point;
         matrix[current_start.row][current_start.col] = 'S';
 
         (tree, current_visited) = explore_map(&matrix, &(shortest_tree_length + 1));

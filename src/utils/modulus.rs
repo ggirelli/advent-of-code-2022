@@ -7,10 +7,10 @@ pub struct Modulus {
 }
 
 impl Modulus {
-    pub fn new(n: &u64, modulus: u64) -> Modulus {
+    pub fn new(n: &u64, base: u64) -> Modulus {
         Modulus {
-            modulus: modulus,
-            remainder: (n % modulus),
+            modulus: base,
+            remainder: (n % base),
         }
     }
 

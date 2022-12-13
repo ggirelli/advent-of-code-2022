@@ -12,7 +12,7 @@ pub fn pt1() {
     let mut max_elf_calories: i32 = 0;
     let mut current_elf_calories: i32 = 0;
     for row in _rows {
-        if row == "" {
+        if row.is_empty() {
             // Empty line indicates the current elf is done
             // println!("Elf #{elf_counter} has {current_elf_calories} calories. (max has {max_elf_calories})");
             if current_elf_calories >= max_elf_calories {
@@ -50,7 +50,7 @@ pub fn pt2() {
     elf_items_counter.push(0);
 
     for row in _rows {
-        if row == "" {
+        if row.is_empty() {
             // Empty line indicates the current elf is done
             // println!("Elf #{} has {} calories.", elf_counter+1, elf_calories[elf_counter]);
             elf_counter += 1;
