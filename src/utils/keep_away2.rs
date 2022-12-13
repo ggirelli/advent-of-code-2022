@@ -183,7 +183,7 @@ fn test_perform_operation() {
 
     item = Modulus::new(&1, 5);
     _perform_operation(&"new = old * old".to_string(), &mut item);
-    assert_eq!(item.remainder, 1 % 5);
+    assert_eq!(item.remainder, 1);
 
     item = Modulus::new(&5, 5);
     _perform_operation(&"new = old * old".to_string(), &mut item);
@@ -286,9 +286,7 @@ fn test_parse_monkeys() {
     let modulus_base = update_modulus_base(&_rows, 1);
     let monkeys: Vec<Monkey> = parse_monkeys(&_rows, &modulus_base);
 
-    let mut test_items: Vec<Modulus> = Vec::new();
-    test_items.push(Modulus::new(&79, modulus_base));
-    test_items.push(Modulus::new(&98, modulus_base));
+    let test_items: Vec<Modulus> = vec![Modulus::new(&79, modulus_base),Modulus::new(&98, modulus_base)];
 
     assert_eq!(monkeys[0].items, test_items);
     assert_eq!(monkeys[1].operation, "new = old + 6");

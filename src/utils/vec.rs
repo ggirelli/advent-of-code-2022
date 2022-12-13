@@ -30,9 +30,9 @@ fn test_is_subset_i32() {
     );
 }
 
-pub fn do_overlap_i32(first: &Vec<i32>, second: &Vec<i32>) -> bool {
+pub fn do_overlap_i32(first: &Vec<i32>, second: &[i32]) -> bool {
     for element in first {
-        if second.contains(&element) {
+        if second.contains(element) {
             return true;
         }
     }
