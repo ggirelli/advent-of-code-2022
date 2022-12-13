@@ -124,10 +124,8 @@ pub fn pt2(file_path: String) -> usize {
             chain_positions[0] = update_position(chain_positions[0], direction);
 
             for knot_idx in 0..(chain_positions.len() - 1) {
-                chain_positions[knot_idx + 1] = update_tail_position(
-                    &chain_positions[knot_idx],
-                    chain_positions[knot_idx + 1]
-                );
+                chain_positions[knot_idx + 1] =
+                    update_tail_position(&chain_positions[knot_idx], chain_positions[knot_idx + 1]);
             }
 
             if !visited_positions.contains(&chain_positions[chain_positions.len() - 1]) {
