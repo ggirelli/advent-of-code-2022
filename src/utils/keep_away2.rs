@@ -1,6 +1,6 @@
 use crate::utils::modulus::Modulus;
 
-fn _parse_starting_item_values(line: &String) -> Vec<u64> {
+fn _parse_starting_item_values(line: &str) -> Vec<u64> {
     assert_eq!(&line[..18], "  Starting items: ");
     line[18..]
         .split(", ")
@@ -35,7 +35,7 @@ fn test_parse_starting_item_values_panic() {
     _parse_starting_item_values(&"Starting items: 79, 98".to_string());
 }
 
-fn _extract_operation(line: &String) -> String {
+fn _extract_operation(line: &str) -> String {
     assert_eq!(&line[..13], "  Operation: ");
     line[13..].to_string()
 }
@@ -66,7 +66,7 @@ fn test_extract_operation_panic() {
     _extract_operation(&"Operation: new = old * 19".to_string());
 }
 
-fn _parse_test(line: &String) -> u64 {
+fn _parse_test(line: &str) -> u64 {
     assert_eq!(&line[..21], "  Test: divisible by ");
     line[21..].parse::<u64>().unwrap()
 }
@@ -85,12 +85,12 @@ fn test_parse_test_panic() {
     _parse_test(&"Test: divisible by ".to_string());
 }
 
-fn _parse_target_true(line: &String) -> usize {
+fn _parse_target_true(line: &str) -> usize {
     assert_eq!(&line[..29], "    If true: throw to monkey ");
     line[29..].parse::<usize>().unwrap()
 }
 
-fn _parse_target_false(line: &String) -> usize {
+fn _parse_target_false(line: &str) -> usize {
     assert_eq!(&line[..30], "    If false: throw to monkey ");
     line[30..].parse::<usize>().unwrap()
 }
@@ -139,14 +139,10 @@ fn test_parse_target_false_panic() {
 fn _perform_operation(operation_string: &String, n: &mut Modulus) {
     assert!(operation_string.len() >= 13);
 
-    let value: u64;
-    match &operation_string[12..] {
-        "old" => value = n.remainder,
-        _ => {
-            value =
-                Modulus::new(&operation_string[12..].parse::<u64>().unwrap(), n.modulus).remainder
-        }
-    }
+    let value: u64 = match &operation_string[12..] {
+        "old" => n.remainder,
+        _ => Modulus::new(&operation_string[12..].parse::<u64>().unwrap(), n.modulus).remainder,
+    };
 
     let operator_char: char = operation_string
         .chars()
@@ -216,20 +212,20 @@ pub struct Monkey {
 impl Monkey {
     pub fn new(_rows: &Vec<&String>, modulus_base: &u64) -> Monkey {
         assert_eq!(_rows.len(), 6);
-        let test_value: u64 = _parse_test(&_rows[3]);
+        let test_value: u64 = _parse_test(_rows[3]);
         assert_eq!(modulus_base % test_value, 0);
         Monkey {
-            items: values2items(&_parse_starting_item_values(&_rows[1]), modulus_base),
-            operation: _extract_operation(&_rows[2]),
+            items: values2items(&_parse_starting_item_values(_rows[1]), modulus_base),
+            operation: _extract_operation(_rows[2]),
             test: test_value,
-            target_true: _parse_target_true(&_rows[4]),
-            target_false: _parse_target_false(&_rows[5]),
+            target_true: _parse_target_true(_rows[4]),
+            target_false: _parse_target_false(_rows[5]),
             inspection_counter: 0,
         }
     }
 
     pub fn inspect_next(&mut self) -> (Modulus, usize) {
-        assert!(self.items.len() > 0);
+        assert!(!self.items.is_empty());
 
         let mut worry_level: Modulus = self.items.remove(0);
         _perform_operation(&self.operation, &mut worry_level);
@@ -237,9 +233,9 @@ impl Monkey {
         self.inspection_counter += 1;
 
         if (worry_level.remainder % self.test) == 0 {
-            return (worry_level, self.target_true);
+            (worry_level, self.target_true)
         } else {
-            return (worry_level, self.target_false);
+            (worry_level, self.target_false)
         }
     }
 }
@@ -268,7 +264,7 @@ pub fn parse_monkeys(_rows: &Vec<String>, modulus_base: &u64) -> Vec<Monkey> {
 
     let mut monkey_strings: Vec<&String> = Vec::new();
     for line in _rows {
-        if line == "" {
+        if line.is_empty() {
             monkeys.push(Monkey::new(&monkey_strings, modulus_base));
             monkey_strings = Vec::new();
         } else {
@@ -303,7 +299,7 @@ pub fn update_modulus_base(_rows: &Vec<String>, mut modulus_base: u64) -> u64 {
         if line.len() < 21 {
             continue;
         }
-        if line[..21] == "  Test: divisible by ".to_string() {
+        if line[..21] == *"  Test: divisible by " {
             modulus_base *= line[21..].parse::<u64>().unwrap();
         }
     }
@@ -313,7 +309,7 @@ pub fn update_modulus_base(_rows: &Vec<String>, mut modulus_base: u64) -> u64 {
 pub fn run_rounds(_monkeys: &mut Vec<Monkey>, n_rounds: usize) -> i64 {
     for _ in 0..n_rounds {
         for monkey_idx in 0.._monkeys.len() {
-            while _monkeys[monkey_idx].items.len() > 0 {
+            while !_monkeys[monkey_idx].items.is_empty() {
                 let inspection_ans: (Modulus, usize) = _monkeys[monkey_idx].inspect_next();
 
                 _monkeys[inspection_ans.1].items.push(inspection_ans.0);

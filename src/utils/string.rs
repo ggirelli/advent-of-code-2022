@@ -73,9 +73,9 @@ pub fn unique_string(word: String) -> String {
     for letter in count_characters(word).keys() {
         unique_characters.push(*letter);
     }
-    unique_characters.sort_by(|a, b| a.cmp(b));
-    let uniqued_string = String::from_iter(unique_characters);
-    uniqued_string
+    unique_characters.sort();
+
+    String::from_iter(unique_characters)
 }
 
 #[test]

@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 fn line_is_command(line: &str) -> bool {
-    line.chars().next().unwrap() == '$'
+    line.starts_with('$')
 }
 
 #[test]
 fn test_line_is_command() {
-    assert!(line_is_command(&"$ ls".to_string()));
-    assert!(!line_is_command(&"dir a".to_string()));
+    assert!(line_is_command("$ ls"));
+    assert!(!line_is_command("dir a"));
 }
 
 pub fn parse_command(line: &String) -> [String; 2] {

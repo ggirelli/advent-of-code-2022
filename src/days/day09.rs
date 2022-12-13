@@ -7,8 +7,8 @@ fn parse_steps(line: &str) -> i32 {
 
 #[test]
 fn test_parse_steps() {
-    assert_eq!(parse_steps(&"L 5".to_string()), 5);
-    assert_eq!(parse_steps(&"U 13".to_string()), 13);
+    assert_eq!(parse_steps("L 5"), 5);
+    assert_eq!(parse_steps("U 13"), 13);
 }
 
 fn update_position(mut position: (i32, i32), direction: char) -> (i32, i32) {

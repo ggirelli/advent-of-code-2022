@@ -1,7 +1,7 @@
-pub fn is_subset_i32(first: &Vec<i32>, second: &Vec<i32>) -> bool {
+pub fn is_subset_i32(first: &Vec<i32>, second: &[i32]) -> bool {
     let mut contains_counter: i32 = 0;
     for element in first {
-        if second.contains(&element) {
+        if second.contains(element) {
             contains_counter += 1;
         }
     }

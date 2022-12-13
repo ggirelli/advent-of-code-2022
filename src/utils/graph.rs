@@ -75,8 +75,8 @@ fn test_map_matrix2heights() {
 }
 
 pub fn find_point(matrix: &Vec<Vec<char>>, needle: char) -> CellCoords {
-    for row_idx in 0..matrix.len() {
-        for (col_idx, item) in matrix[row_idx].iter().enumerate() {
+    for (row_idx, row) in matrix.iter().enumerate() {
+        for (col_idx, item) in row.iter().enumerate() {
             if item == &needle {
                 return CellCoords {
                     row: row_idx,
@@ -98,8 +98,8 @@ fn test_find_point() {
 
 pub fn find_all_points(matrix: &Vec<Vec<char>>, needle: char) -> Vec<CellCoords> {
     let mut points: Vec<CellCoords> = Vec::new();
-    for row_idx in 0..matrix.len() {
-        for (col_idx, item) in matrix[row_idx].iter().enumerate() {
+    for (row_idx, row) in matrix.iter().enumerate() {
+        for (col_idx, item) in row.iter().enumerate() {
             if item == &needle {
                 points.push(CellCoords {
                     row: row_idx,
@@ -235,7 +235,7 @@ fn bread_first_search_heights(
                 if !visited.contains(&neighbor) {
                     visited.push(neighbor.copy());
                     new_tree_layer.push(TreeStep {
-                        parent_idx: parent_idx,
+                        parent_idx,
                         cell: neighbor.copy(),
                         from_direction: direction,
                     });
@@ -249,10 +249,10 @@ fn bread_first_search_heights(
 }
 
 pub fn explore_map(matrix: &Vec<Vec<char>>, max_steps: &usize) -> (Tree, Vec<CellCoords>) {
-    let mut heights: Vec<Vec<i32>> = map_matrix2heights(&matrix);
+    let mut heights: Vec<Vec<i32>> = map_matrix2heights(matrix);
 
-    let source: CellCoords = find_point(&matrix, 'S');
-    let destination: CellCoords = find_point(&matrix, 'E');
+    let source: CellCoords = find_point(matrix, 'S');
+    let destination: CellCoords = find_point(matrix, 'E');
 
     // Set source point to maximum height to allow hike to start
     heights[source.row][source.col] = 'a' as i32;
@@ -260,7 +260,7 @@ pub fn explore_map(matrix: &Vec<Vec<char>>, max_steps: &usize) -> (Tree, Vec<Cel
 
     let mut visited: Vec<CellCoords> = Vec::new();
     let tree: Tree =
-        bread_first_search_heights(&heights, &mut visited, &source, &destination, &max_steps);
+        bread_first_search_heights(&heights, &mut visited, &source, &destination, max_steps);
 
     //print_path(&matrix, &tree, &destination);
     (tree, visited)
@@ -295,11 +295,7 @@ pub fn tree2path(tree: &Tree, dst: &CellCoords) -> Vec<(CellCoords, char)> {
     path
 }
 
-pub fn closest_step(
-    path: &Vec<(CellCoords, char)>,
-    matrix: &Vec<Vec<char>>,
-    needle: char,
-) -> usize {
+pub fn closest_step(path: &Vec<(CellCoords, char)>, matrix: &[Vec<char>], needle: char) -> usize {
     for step_idx in (0..path.len()).rev() {
         if matrix[path[step_idx].0.row][path[step_idx].0.col] == needle {
             return path.len() - step_idx - 1;
@@ -319,7 +315,7 @@ pub fn print_path(matrix: &Vec<Vec<char>>, tree: &Tree, dst: &CellCoords) {
 
     map_vec[dst.row][dst.col] = 'E';
 
-    let path: Vec<(CellCoords, char)> = tree2path(&tree, dst);
+    let path: Vec<(CellCoords, char)> = tree2path(tree, dst);
     for (step, direction) in path {
         map_vec[step.row][step.col] = direction;
     }

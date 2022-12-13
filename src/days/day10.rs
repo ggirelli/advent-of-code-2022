@@ -15,15 +15,15 @@ fn extract_values(line: &str) -> Vec<i32> {
 
 #[test]
 fn test_extract_value() {
-    assert_eq!(extract_values(&"noop".to_string()), [0].to_vec());
-    assert_eq!(extract_values(&"addx 15".to_string()), [0, 15].to_vec());
-    assert_eq!(extract_values(&"addx -120".to_string()), [0, -120].to_vec());
+    assert_eq!(extract_values("noop"), [0].to_vec());
+    assert_eq!(extract_values("addx 15"), [0, 15].to_vec());
+    assert_eq!(extract_values("addx -120"), [0, -120].to_vec());
 }
 
 #[test]
 #[should_panic]
 fn test_extract_value_unrecognized_instruction() {
-    extract_values(&"anythingelse".to_string());
+    extract_values("anythingelse");
 }
 
 pub fn pt1(file_path: String) -> i32 {

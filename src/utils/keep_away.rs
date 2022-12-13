@@ -1,4 +1,4 @@
-fn _parse_starting_items(line: &String) -> Vec<i32> {
+fn _parse_starting_items(line: &str) -> Vec<i32> {
     assert_eq!(&line[..18], "  Starting items: ");
     line[18..]
         .split(", ")
@@ -33,7 +33,7 @@ fn test_parse_starting_items_panic() {
     _parse_starting_items(&"Starting items: 79, 98".to_string());
 }
 
-fn _extract_operation(line: &String) -> String {
+fn _extract_operation(line: &str) -> String {
     assert_eq!(&line[..13], "  Operation: ");
     line[13..].to_string()
 }
@@ -64,7 +64,7 @@ fn test_extract_operation_panic() {
     _extract_operation(&"Operation: new = old * 19".to_string());
 }
 
-fn _parse_test(line: &String) -> i32 {
+fn _parse_test(line: &str) -> i32 {
     assert_eq!(&line[..21], "  Test: divisible by ");
     line[21..].parse::<i32>().unwrap()
 }
@@ -83,12 +83,12 @@ fn test_parse_test_panic() {
     _parse_test(&"Test: divisible by ".to_string());
 }
 
-fn _parse_target_true(line: &String) -> usize {
+fn _parse_target_true(line: &str) -> usize {
     assert_eq!(&line[..29], "    If true: throw to monkey ");
     line[29..].parse::<usize>().unwrap()
 }
 
-fn _parse_target_false(line: &String) -> usize {
+fn _parse_target_false(line: &str) -> usize {
     assert_eq!(&line[..30], "    If false: throw to monkey ");
     line[30..].parse::<usize>().unwrap()
 }
@@ -137,19 +137,18 @@ fn test_parse_target_false_panic() {
 fn _perform_operation(operation_string: &String, n: i32) -> i32 {
     assert!(operation_string.len() >= 13);
 
-    let value: i32;
-    match &operation_string[12..] {
-        "old" => value = n,
-        _ => value = operation_string[12..].parse::<i32>().unwrap(),
-    }
+    let value: i32 = match &operation_string[12..] {
+        "old" => n,
+        _ => operation_string[12..].parse::<i32>().unwrap(),
+    };
 
     let operator_char: char = operation_string
         .chars()
         .nth(10)
         .expect("ERROR: operation string is too short.");
     match operator_char {
-        '*' => return n * value,
-        '+' => return n + value,
+        '*' => n * value,
+        '+' => n + value,
         _ => panic!(
             "ERROR: unrecognized '{}' operation. ({})",
             operator_char, operation_string
@@ -186,17 +185,17 @@ impl Monkey {
     pub fn new(_rows: &Vec<&String>) -> Monkey {
         assert_eq!(_rows.len(), 6);
         Monkey {
-            items: _parse_starting_items(&_rows[1]),
-            operation: _extract_operation(&_rows[2]),
-            test: _parse_test(&_rows[3]),
-            target_true: _parse_target_true(&_rows[4]),
-            target_false: _parse_target_false(&_rows[5]),
+            items: _parse_starting_items(_rows[1]),
+            operation: _extract_operation(_rows[2]),
+            test: _parse_test(_rows[3]),
+            target_true: _parse_target_true(_rows[4]),
+            target_false: _parse_target_false(_rows[5]),
             inspection_counter: 0,
         }
     }
 
     pub fn inspect_next(&mut self) -> (i32, usize) {
-        assert!(self.items.len() > 0);
+        assert!(!self.items.is_empty());
 
         let mut worry_level: i32 = self.items.remove(0);
         worry_level = _perform_operation(&self.operation, worry_level);
@@ -205,9 +204,9 @@ impl Monkey {
         self.inspection_counter += 1;
 
         if worry_level % self.test == 0 {
-            return (worry_level, self.target_true);
+            (worry_level, self.target_true)
         } else {
-            return (worry_level, self.target_false);
+            (worry_level, self.target_false)
         }
     }
 }
@@ -227,7 +226,7 @@ pub fn parse_monkeys(_rows: &Vec<String>) -> Vec<Monkey> {
 
     let mut monkey_strings: Vec<&String> = Vec::new();
     for line in _rows {
-        if line == "" {
+        if line.is_empty() {
             monkeys.push(Monkey::new(&monkey_strings));
             monkey_strings = Vec::new();
         } else {
@@ -253,7 +252,7 @@ fn test_parse_monkeys() {
 pub fn run_rounds(_monkeys: &mut Vec<Monkey>, n_rounds: usize) -> i64 {
     for _ in 0..n_rounds {
         for monkey_idx in 0.._monkeys.len() {
-            while _monkeys[monkey_idx].items.len() > 0 {
+            while !_monkeys[monkey_idx].items.is_empty() {
                 let inspection_ans: (i32, usize) = _monkeys[monkey_idx].inspect_next();
                 _monkeys[inspection_ans.1].items.push(inspection_ans.0);
             }

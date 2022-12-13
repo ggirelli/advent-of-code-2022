@@ -147,9 +147,9 @@ pub fn get_scenic_score(matrix: &Vec<Vec<i32>>, row_idx: usize, col_idx: usize) 
 
     // Check right
     partial_score = 0;
-    for tree_idx in (col_idx + 1)..row.len() {
+    for neighbor in row.iter().take(row.len()).skip(col_idx + 1) {
         partial_score += 1;
-        if row[tree_idx] >= cell {
+        if neighbor >= &cell {
             break;
         }
     }
@@ -167,9 +167,9 @@ pub fn get_scenic_score(matrix: &Vec<Vec<i32>>, row_idx: usize, col_idx: usize) 
 
     // Check below
     partial_score = 0;
-    for tree_idx in (row_idx + 1)..row.len() {
+    for neighbor in col.iter().take(row.len()).skip(row_idx + 1) {
         partial_score += 1;
-        if col[tree_idx] >= cell {
+        if neighbor >= &cell {
             break;
         }
     }
@@ -188,10 +188,10 @@ fn test_get_scenic_score() {
 }
 
 pub fn max(matrix: &Vec<Vec<i32>>, mut start: i32) -> i32 {
-    for row_idx in 0..matrix.len() {
-        for col_idx in 0..matrix[row_idx].len() {
-            if matrix[row_idx][col_idx] > start {
-                start = matrix[row_idx][col_idx];
+    for row in matrix {
+        for col in row {
+            if col > &start {
+                start = *col;
             }
         }
     }
