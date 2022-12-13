@@ -1,6 +1,7 @@
 pub mod char;
 pub mod fs;
 pub mod geom;
+pub mod graph;
 pub mod io;
 pub mod keep_away;
 pub mod keep_away2;

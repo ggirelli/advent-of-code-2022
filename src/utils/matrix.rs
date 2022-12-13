@@ -186,3 +186,21 @@ fn test_get_scenic_score() {
     assert_eq!(get_scenic_score(&_mtx, 1, 2), 4);
     assert_eq!(get_scenic_score(&_mtx, 3, 2), 8);
 }
+
+pub fn max(matrix: &Vec<Vec<i32>>, mut start: i32) -> i32 {
+    for row_idx in 0..matrix.len() {
+        for col_idx in 0..matrix[row_idx].len() {
+            if matrix[row_idx][col_idx] > start {
+                start = matrix[row_idx][col_idx];
+            }
+        }
+    }
+    start
+}
+
+#[test]
+fn test_max() {
+    assert_eq!(max(&_test_mtx(), 0), 5);
+    assert_eq!(max(&_test_mtx(), 6), 6);
+    assert_eq!(max(&_test_mtx(), -100), 5);
+}
