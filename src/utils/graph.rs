@@ -74,7 +74,7 @@ fn test_map_matrix2heights() {
     );
 }
 
-pub fn find_point(matrix: &Vec<Vec<char>>, needle: char) -> CellCoords {
+pub fn find_point(matrix: &[Vec<char>], needle: char) -> CellCoords {
     for (row_idx, row) in matrix.iter().enumerate() {
         for (col_idx, item) in row.iter().enumerate() {
             if item == &needle {
@@ -96,7 +96,7 @@ fn test_find_point() {
     assert_eq!(find_point(&matrix, 'e'), CellCoords { row: 1, col: 1 });
 }
 
-pub fn find_all_points(matrix: &Vec<Vec<char>>, needle: char) -> Vec<CellCoords> {
+pub fn find_all_points(matrix: &[Vec<char>], needle: char) -> Vec<CellCoords> {
     let mut points: Vec<CellCoords> = Vec::new();
     for (row_idx, row) in matrix.iter().enumerate() {
         for (col_idx, item) in row.iter().enumerate() {
