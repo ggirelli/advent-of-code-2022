@@ -1,4 +1,5 @@
 use crate::utils::matrix;
+use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct CellCoords {
@@ -18,6 +19,12 @@ impl CellCoords {
 impl PartialEq for CellCoords {
     fn eq(&self, other: &Self) -> bool {
         (self.row == other.row) & (self.col == other.col)
+    }
+}
+
+impl fmt::Display for CellCoords {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({};{})", self.row, self.col)
     }
 }
 
@@ -235,7 +242,7 @@ pub fn explore_map(
     let destination: CellCoords = find_point(&matrix, 'E');
 
     // Set source point to maximum height to allow hike to start
-    heights[source.row][source.col] = matrix::max(&heights, 'z' as i32);
+    heights[source.row][source.col] = 'a' as i32;
     heights[destination.row][destination.col] = matrix::max(&heights, 'z' as i32);
 
     let mut visited: Vec<CellCoords> = Vec::new();
@@ -250,13 +257,16 @@ pub fn tree2path(
     tree: &Vec<Vec<(usize, CellCoords, char)>>,
     dst: &CellCoords,
 ) -> Vec<(CellCoords, char)> {
-    let mut path: Vec<(CellCoords, char)> = [(dst.copy(), 'E')].to_vec();
+    let mut path: Vec<(CellCoords, char)> = [].to_vec();
 
     let mut parent_idx: usize = 0;
     for cell_idx in 0..tree[tree.len() - 1].len() {
         if &tree[tree.len() - 1][cell_idx].1 == dst {
             parent_idx = cell_idx;
         }
+    }
+    if parent_idx == 0 {
+        panic!("Destination not found in the end of the tree");
     }
 
     let mut direction: char = 'E';
@@ -310,7 +320,7 @@ pub fn print_path(
         map_string.push('\n');
     }
     map_string.pop();
-    println!("{}", map_string);
+    println!("\n{}\n", map_string);
 }
 
 #[test]

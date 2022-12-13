@@ -13,6 +13,8 @@ pub fn pt1(file_path: String) -> usize {
     let matrix: Vec<Vec<char>> = map2matrix(&_rows);
     let tree: Vec<Vec<(usize, CellCoords, char)>>;
     (tree, _) = explore_map(&matrix, &10000);
+    let destination: &CellCoords = &find_point(&matrix, 'E');
+    print_path(&matrix, &tree, destination);
     tree.len() - 1
 }
 
@@ -28,39 +30,43 @@ pub fn pt2(file_path: String) -> usize {
     let mut current_start: &CellCoords = &find_point(&matrix, 'S');
     let destination: &CellCoords = &find_point(&matrix, 'E');
 
-    let mut shortest_tree_length: usize = explore_map(&matrix, &10000).0.len() - 1;
+    let mut tree: Vec<Vec<(usize, CellCoords, char)>>;
+    let mut global_visited: Vec<CellCoords> = Vec::new();
+    let mut current_visited: Vec<CellCoords>;
+
+    let mut shortest_tree_length: usize = 10000;
     let mut current_tree_length: usize;
 
     let _start_points: Vec<CellCoords> = find_all_points(&matrix, 'a');
     for point_idx in 0.._start_points.len() {
-        println!(
-            "{}/{} ({})",
-            point_idx,
-            _start_points.len(),
-            shortest_tree_length
-        );
+        print!("{}...", point_idx);
+        if global_visited.contains(&_start_points[point_idx]) {
+            continue;
+        }
 
         matrix[current_start.row][current_start.col] = 'a';
-        matrix[_start_points[point_idx].row][_start_points[point_idx].col] = 'S';
+        current_start = &_start_points[point_idx];
+        matrix[current_start.row][current_start.col] = 'S';
 
-        let tree: Vec<Vec<(usize, CellCoords, char)>>;
-        let visited: Vec<CellCoords>;
-        (tree, visited) = explore_map(&matrix, &(shortest_tree_length + 1));
-        if !visited.contains(destination) {
-            current_start = &_start_points[point_idx];
+        (tree, current_visited) = explore_map(&matrix, &(shortest_tree_length + 1));
+        if !current_visited.contains(destination) {
             continue;
         }
 
         let path = tree2path(&tree, destination);
+        for (step, _) in &path {
+            if !global_visited.contains(step) {
+                global_visited.push(step.copy());
+            }
+        }
+
         current_tree_length = closest_step(&path, &matrix, 'a');
         if current_tree_length >= shortest_tree_length {
-            current_start = &_start_points[point_idx];
             continue;
         }
 
         print_path(&matrix, &tree, destination);
         shortest_tree_length = current_tree_length;
-        current_start = &_start_points[point_idx];
     }
     shortest_tree_length
 }
