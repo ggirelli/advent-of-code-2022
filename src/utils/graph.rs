@@ -107,38 +107,6 @@ fn test_find_point() {
     assert_eq!(find_point(&matrix, 'e'), CellCoords { row: 1, col: 1 });
 }
 
-pub fn _find_all_points(matrix: &[Vec<char>], needle: char) -> Vec<CellCoords> {
-    let mut points: Vec<CellCoords> = Vec::new();
-    for (row_idx, row) in matrix.iter().enumerate() {
-        for (col_idx, item) in row.iter().enumerate() {
-            if item == &needle {
-                points.push(CellCoords {
-                    row: row_idx,
-                    col: col_idx,
-                });
-            }
-        }
-    }
-    points
-}
-
-#[test]
-fn test_find_all_points() {
-    let matrix: Vec<Vec<char>> = map2matrix(&_test_map());
-    assert_eq!(
-        _find_all_points(&matrix, 'a'),
-        [CellCoords { row: 0, col: 0 }].to_vec()
-    );
-    assert_eq!(
-        _find_all_points(&matrix, 'c'),
-        [CellCoords { row: 0, col: 2 }].to_vec()
-    );
-    assert_eq!(
-        _find_all_points(&matrix, 'e'),
-        [CellCoords { row: 1, col: 1 }].to_vec()
-    );
-}
-
 #[test]
 #[should_panic]
 fn test_find_point_panic() {
@@ -451,15 +419,6 @@ pub fn tree2path(tree: &Tree, dst: &CellCoords) -> Vec<(CellCoords, char)> {
     }
 
     path
-}
-
-pub fn _closest_step(path: &Vec<(CellCoords, char)>, matrix: &[Vec<char>], needle: char) -> usize {
-    for step_idx in (0..path.len()).rev() {
-        if matrix[path[step_idx].0.row][path[step_idx].0.col] == needle {
-            return path.len() - step_idx - 1;
-        }
-    }
-    path.len() - 1
 }
 
 pub fn print_path(matrix: &Vec<Vec<char>>, tree: &Tree, dst: &CellCoords) {
