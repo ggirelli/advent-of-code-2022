@@ -1,7 +1,8 @@
-use crate::utils::graph::closest_step;
-use crate::utils::graph::explore_map;
-use crate::utils::graph::find_all_points;
+use crate::utils::graph::_closest_step;
+use crate::utils::graph::_find_all_points;
 use crate::utils::graph::find_point;
+use crate::utils::graph::hike_downhill;
+use crate::utils::graph::hike_uphill;
 use crate::utils::graph::map2matrix;
 use crate::utils::graph::print_path;
 use crate::utils::graph::tree2path;
@@ -13,7 +14,7 @@ pub fn pt1(file_path: String) -> usize {
     let _rows: Vec<String> = read_rows(&file_path);
     let matrix: Vec<Vec<char>> = map2matrix(&_rows);
     let tree: Tree;
-    (tree, _) = explore_map(&matrix, &10000);
+    (tree, _) = hike_uphill(&matrix, &10000);
     let destination: &CellCoords = &find_point(&matrix, 'E');
     print_path(&matrix, &tree, destination);
     tree.len() - 1
@@ -24,7 +25,7 @@ fn test_pt1() {
     assert_eq!(pt1("data/day12.test.txt".to_string()), 31);
 }
 
-pub fn pt2(file_path: String) -> usize {
+pub fn _pt2_slow_iterative(file_path: String) -> usize {
     let _rows: Vec<String> = read_rows(&file_path);
     let mut matrix: Vec<Vec<char>> = map2matrix(&_rows);
 
@@ -38,7 +39,7 @@ pub fn pt2(file_path: String) -> usize {
     let mut shortest_tree_length: usize = 10000;
     let mut current_tree_length: usize;
 
-    let _start_points: Vec<CellCoords> = find_all_points(&matrix, 'a');
+    let _start_points: Vec<CellCoords> = _find_all_points(&matrix, 'a');
     for start_point in &_start_points {
         if global_visited.contains(start_point) {
             continue;
@@ -48,7 +49,7 @@ pub fn pt2(file_path: String) -> usize {
         current_start = start_point;
         matrix[current_start.row][current_start.col] = 'S';
 
-        (tree, current_visited) = explore_map(&matrix, &(shortest_tree_length + 1));
+        (tree, current_visited) = hike_uphill(&matrix, &(shortest_tree_length + 1));
         if !current_visited.contains(destination) {
             continue;
         }
@@ -60,7 +61,7 @@ pub fn pt2(file_path: String) -> usize {
             }
         }
 
-        current_tree_length = closest_step(&path, &matrix, 'a');
+        current_tree_length = _closest_step(&path, &matrix, 'a');
         if current_tree_length >= shortest_tree_length {
             continue;
         }
@@ -69,6 +70,19 @@ pub fn pt2(file_path: String) -> usize {
         shortest_tree_length = current_tree_length;
     }
     shortest_tree_length
+}
+
+pub fn pt2(file_path: String) -> usize {
+    let _rows: Vec<String> = read_rows(&file_path);
+    let matrix: Vec<Vec<char>> = map2matrix(&_rows);
+    let tree: Tree;
+    (tree, _) = hike_downhill(&matrix, &10000);
+    print_path(
+        &matrix,
+        &tree,
+        &tree.layers[tree.layers.len() - 1][tree.layers[tree.layers.len() - 1].len() - 1].cell,
+    );
+    tree.len() - 1
 }
 
 #[test]
