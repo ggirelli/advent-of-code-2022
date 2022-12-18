@@ -32,6 +32,17 @@ fn _test_map() -> Vec<String> {
     ["abc".to_string(), "def".to_string()].to_vec()
 }
 
+fn _test_map2() -> Vec<String> {
+    [
+        "aaaaa".to_string(),
+        "abcba".to_string(),
+        "abdba".to_string(),
+        "abcba".to_string(),
+        "aaaaa".to_string(),
+    ]
+    .to_vec()
+}
+
 pub fn map2matrix(_rows: &Vec<String>) -> Vec<Vec<char>> {
     let mut matrix: Vec<Vec<char>> = Vec::new();
     for row_idx in 0.._rows.len() {
@@ -96,45 +107,13 @@ fn test_find_point() {
     assert_eq!(find_point(&matrix, 'e'), CellCoords { row: 1, col: 1 });
 }
 
-pub fn find_all_points(matrix: &[Vec<char>], needle: char) -> Vec<CellCoords> {
-    let mut points: Vec<CellCoords> = Vec::new();
-    for (row_idx, row) in matrix.iter().enumerate() {
-        for (col_idx, item) in row.iter().enumerate() {
-            if item == &needle {
-                points.push(CellCoords {
-                    row: row_idx,
-                    col: col_idx,
-                });
-            }
-        }
-    }
-    points
-}
-
-#[test]
-fn test_find_all_points() {
-    let matrix: Vec<Vec<char>> = map2matrix(&_test_map());
-    assert_eq!(
-        find_all_points(&matrix, 'a'),
-        [CellCoords { row: 0, col: 0 }].to_vec()
-    );
-    assert_eq!(
-        find_all_points(&matrix, 'c'),
-        [CellCoords { row: 0, col: 2 }].to_vec()
-    );
-    assert_eq!(
-        find_all_points(&matrix, 'e'),
-        [CellCoords { row: 1, col: 1 }].to_vec()
-    );
-}
-
 #[test]
 #[should_panic]
 fn test_find_point_panic() {
     find_point(&map2matrix(&_test_map()), 'g');
 }
 
-fn find_neighbors(heights: &Vec<Vec<i32>>, src: &CellCoords) -> Vec<(CellCoords, char)> {
+fn find_neighbors_uphill(heights: &Vec<Vec<i32>>, src: &CellCoords) -> Vec<(CellCoords, char)> {
     let mut neighbors: Vec<(CellCoords, char)> = Vec::new();
     if heights.is_empty() {
         return neighbors;
@@ -180,11 +159,11 @@ fn find_neighbors(heights: &Vec<Vec<i32>>, src: &CellCoords) -> Vec<(CellCoords,
 }
 
 #[test]
-fn test_find_neighbors() {
+fn test_find_neighbors_uphill() {
     let matrix: Vec<Vec<char>> = map2matrix(&_test_map());
     let heights: Vec<Vec<i32>> = map_matrix2heights(&matrix);
     assert_eq!(
-        find_neighbors(&heights, &CellCoords { row: 0, col: 1 }),
+        find_neighbors_uphill(&heights, &CellCoords { row: 0, col: 1 }),
         [
             (CellCoords { row: 0, col: 0 }, '<'),
             (CellCoords { row: 0, col: 2 }, '>')
@@ -193,14 +172,83 @@ fn test_find_neighbors() {
     );
 }
 
+fn find_neighbors_downhill(heights: &Vec<Vec<i32>>, src: &CellCoords) -> Vec<(CellCoords, char)> {
+    let mut neighbors: Vec<(CellCoords, char)> = Vec::new();
+    if heights.is_empty() {
+        return neighbors;
+    }
+    let src_value: i32 = heights[src.row][src.col];
+    if (src.row > 0) && (heights[src.row - 1][src.col] - src_value > -2) {
+        neighbors.push((
+            CellCoords {
+                row: src.row - 1,
+                col: src.col,
+            },
+            '^',
+        ));
+    }
+    if (src.row < (heights.len() - 1)) && (heights[src.row + 1][src.col] - src_value > -2) {
+        neighbors.push((
+            CellCoords {
+                row: src.row + 1,
+                col: src.col,
+            },
+            'v',
+        ));
+    }
+    if (src.col > 0) && (heights[src.row][src.col - 1] - src_value > -2) {
+        neighbors.push((
+            CellCoords {
+                row: src.row,
+                col: src.col - 1,
+            },
+            '<',
+        ));
+    }
+    if (src.col < (heights[0].len() - 1)) && (heights[src.row][src.col + 1] - src_value > -2) {
+        neighbors.push((
+            CellCoords {
+                row: src.row,
+                col: src.col + 1,
+            },
+            '>',
+        ));
+    }
+    neighbors
+}
+
+#[test]
+fn test_find_neighbors_downhill() {
+    let matrix: Vec<Vec<char>> = map2matrix(&_test_map2());
+    let heights: Vec<Vec<i32>> = map_matrix2heights(&matrix);
+    assert_eq!(
+        find_neighbors_downhill(&heights, &CellCoords { row: 2, col: 2 }),
+        vec![
+            (CellCoords { row: 1, col: 2 }, '^'),
+            (CellCoords { row: 3, col: 2 }, 'v')
+        ]
+    );
+}
+
+#[derive(Debug)]
 pub struct TreeStep {
     parent_idx: usize,
-    cell: CellCoords,
+    pub cell: CellCoords,
     from_direction: char,
 }
 
+impl fmt::Display for TreeStep {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "[{} {} {}",
+            self.parent_idx, self.from_direction, self.cell
+        )
+    }
+}
+
 pub struct Tree {
-    layers: Vec<Vec<TreeStep>>,
+    pub layers: Vec<Vec<TreeStep>>,
 }
 
 impl Tree {
@@ -209,7 +257,7 @@ impl Tree {
     }
 }
 
-fn bread_first_search_heights(
+fn bread_first_search_uphill(
     heights: &Vec<Vec<i32>>,
     visited: &mut Vec<CellCoords>,
     src: &CellCoords,
@@ -228,10 +276,13 @@ fn bread_first_search_heights(
     visited.push(src.copy());
 
     while (!visited.contains(dst)) & (&step_counter <= max_steps) {
+        if step_counter % 10 == 0 {
+            println!("Step {}", step_counter);
+        }
         let mut new_tree_layer: Vec<TreeStep> = Vec::new();
         for parent_idx in 0..tree.layers[tree.len() - 1].len() {
             let parent_ref: &CellCoords = &tree.layers[tree.len() - 1][parent_idx].cell;
-            for (neighbor, direction) in find_neighbors(heights, parent_ref) {
+            for (neighbor, direction) in find_neighbors_uphill(heights, parent_ref) {
                 if !visited.contains(&neighbor) {
                     visited.push(neighbor.copy());
                     new_tree_layer.push(TreeStep {
@@ -248,7 +299,7 @@ fn bread_first_search_heights(
     tree
 }
 
-pub fn explore_map(matrix: &Vec<Vec<char>>, max_steps: &usize) -> (Tree, Vec<CellCoords>) {
+pub fn hike_uphill(matrix: &Vec<Vec<char>>, max_steps: &usize) -> (Tree, Vec<CellCoords>) {
     let mut heights: Vec<Vec<i32>> = map_matrix2heights(matrix);
 
     let source: CellCoords = find_point(matrix, 'S');
@@ -260,9 +311,84 @@ pub fn explore_map(matrix: &Vec<Vec<char>>, max_steps: &usize) -> (Tree, Vec<Cel
 
     let mut visited: Vec<CellCoords> = Vec::new();
     let tree: Tree =
-        bread_first_search_heights(&heights, &mut visited, &source, &destination, max_steps);
+        bread_first_search_uphill(&heights, &mut visited, &source, &destination, max_steps);
 
     //print_path(&matrix, &tree, &destination);
+    (tree, visited)
+}
+
+#[test]
+fn test_hike_uphill() {
+    use crate::utils::io::read_rows;
+    let _rows: Vec<String> = read_rows(&"data/day12.test.txt".to_string());
+    let matrix: Vec<Vec<char>> = map2matrix(&_rows);
+    let tree: Tree;
+    (tree, _) = hike_uphill(&matrix, &10000);
+    assert_eq!(tree.len() - 1, 31);
+}
+
+fn bread_first_search_downhill(
+    heights: &Vec<Vec<i32>>,
+    visited: &mut Vec<CellCoords>,
+    src: &CellCoords,
+    max_steps: &usize,
+) -> (Tree, bool) {
+    let mut tree: Tree = Tree { layers: Vec::new() };
+    let mut step_counter: usize = 0;
+
+    // Add starting point
+    tree.layers.push(vec![TreeStep {
+        parent_idx: 0,
+        cell: src.copy(),
+        from_direction: 'S',
+    }]);
+    visited.push(src.copy());
+
+    let mut reached_target: bool = false;
+    while (!reached_target)
+        && (visited.len() < heights.len() * heights[0].len())
+        && (&step_counter <= max_steps)
+    {
+        if step_counter % 10 == 0 {
+            println!("Step {}", step_counter);
+        }
+        let mut new_tree_layer: Vec<TreeStep> = Vec::new();
+        for parent_idx in 0..tree.layers[tree.len() - 1].len() {
+            let parent_ref: &CellCoords = &tree.layers[tree.len() - 1][parent_idx].cell;
+            for (neighbor, direction) in find_neighbors_downhill(heights, parent_ref) {
+                if !visited.contains(&neighbor) {
+                    visited.push(neighbor.copy());
+                    new_tree_layer.push(TreeStep {
+                        parent_idx,
+                        cell: neighbor.copy(),
+                        from_direction: direction,
+                    });
+                }
+                if heights[neighbor.row][neighbor.col] == ('a' as i32) {
+                    reached_target = true;
+                }
+            }
+        }
+        tree.layers.push(new_tree_layer);
+        step_counter += 1;
+    }
+
+    (tree, reached_target)
+}
+
+pub fn hike_downhill(matrix: &Vec<Vec<char>>, max_steps: &usize) -> (Tree, Vec<CellCoords>) {
+    let mut heights: Vec<Vec<i32>> = map_matrix2heights(matrix);
+
+    let source: CellCoords = find_point(matrix, 'S');
+    let destination: CellCoords = find_point(matrix, 'E');
+
+    // Set source point to maximum height to allow hike to start
+    heights[source.row][source.col] = 'a' as i32;
+    heights[destination.row][destination.col] = matrix::max(&heights, 'z' as i32);
+
+    let mut visited: Vec<CellCoords> = Vec::new();
+    let tree: Tree = bread_first_search_downhill(&heights, &mut visited, &destination, max_steps).0;
+
     (tree, visited)
 }
 
@@ -295,15 +421,6 @@ pub fn tree2path(tree: &Tree, dst: &CellCoords) -> Vec<(CellCoords, char)> {
     path
 }
 
-pub fn closest_step(path: &Vec<(CellCoords, char)>, matrix: &[Vec<char>], needle: char) -> usize {
-    for step_idx in (0..path.len()).rev() {
-        if matrix[path[step_idx].0.row][path[step_idx].0.col] == needle {
-            return path.len() - step_idx - 1;
-        }
-    }
-    path.len() - 1
-}
-
 pub fn print_path(matrix: &Vec<Vec<char>>, tree: &Tree, dst: &CellCoords) {
     let mut map_vec: Vec<Vec<char>> = Vec::new();
     for row_idx in 0..matrix.len() {
@@ -329,14 +446,4 @@ pub fn print_path(matrix: &Vec<Vec<char>>, tree: &Tree, dst: &CellCoords) {
     }
     map_string.pop();
     println!("\n{}\n", map_string);
-}
-
-#[test]
-fn test_explore_map() {
-    use crate::utils::io::read_rows;
-    let _rows: Vec<String> = read_rows(&"data/day12.test.txt".to_string());
-    let matrix: Vec<Vec<char>> = map2matrix(&_rows);
-    let tree: Tree;
-    (tree, _) = explore_map(&matrix, &10000);
-    assert_eq!(tree.len() - 1, 31);
 }
