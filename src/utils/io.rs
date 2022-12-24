@@ -9,19 +9,21 @@ pub fn read_rows(file_path: &String) -> Vec<String> {
         .collect();
 }
 
-pub fn group_rows(_rows: &Vec<String>, sep: String) -> Vec<Vec<String>> {
-    let mut row_groups: Vec<Vec<String>> = Vec::new();
+pub fn group_row_pairs(_rows: &Vec<String>, sep: String) -> Vec<(String, String)> {
+    let mut row_groups: Vec<(String, String)> = Vec::new();
     let mut current_group: Vec<String> = Vec::new();
     for row in _rows {
         if row == &sep {
-            row_groups.push(current_group);
+            assert_eq!(current_group.len(), 2);
+            row_groups.push((current_group[0].to_string(), current_group[1].to_string()));
             current_group = Vec::new();
         } else {
             current_group.push(row.to_string());
         }
     }
     if current_group.len() > 0 {
-        row_groups.push(current_group);
+        assert_eq!(current_group.len(), 2);
+        row_groups.push((current_group[0].to_string(), current_group[1].to_string()));
     }
     row_groups
 }
