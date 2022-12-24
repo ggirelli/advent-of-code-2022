@@ -109,13 +109,86 @@ fn test_pt1() {
     assert_eq!(pt1("data/day13.test.txt".to_string()), 13);
 }
 
+fn quicksort_packets(_packets: Vec<String>) -> Vec<String> {
+    let mut sorted_packets: Vec<String> = Vec::new();
+    if _packets.len() > 2 {
+        let mut smaller_packets: Vec<String> = Vec::new();
+        let mut larger_packets: Vec<String> = Vec::new();
+        let pivot: String = _packets[0].to_string();
+
+        for packet in _packets[1..].iter() {
+            match compare_values(pivot.to_string(), packet.to_string()) {
+                Some(answer) => {
+                    if answer {
+                        larger_packets.push(packet.to_string());
+                    } else {
+                        smaller_packets.push(packet.to_string());
+                    }
+                }
+                None => {}
+            }
+        }
+
+        smaller_packets = quicksort_packets(smaller_packets);
+        larger_packets = quicksort_packets(larger_packets);
+
+        sorted_packets.append(&mut smaller_packets);
+        sorted_packets.push(pivot);
+        sorted_packets.append(&mut larger_packets);
+    } else if _packets.len() == 2 {
+        match compare_values(_packets[0].to_string(), _packets[1].to_string()) {
+            Some(answer) => {
+                if answer {
+                    sorted_packets.push(_packets[0].to_string());
+                    sorted_packets.push(_packets[1].to_string());
+                } else {
+                    sorted_packets.push(_packets[1].to_string());
+                    sorted_packets.push(_packets[0].to_string());
+                }
+            }
+            None => {}
+        }
+    } else {
+        return _packets;
+    }
+    sorted_packets
+}
+
 pub fn pt2(file_path: String) -> i32 {
     let _rows: Vec<String> = read_rows(&file_path);
-    0
+
+    // Select all packets
+    let mut _packets: Vec<String> = Vec::new();
+    for row in _rows {
+        if row.len() > 0 {
+            _packets.push(row);
+        }
+    }
+
+    // Add divider packets
+    _packets.push("[[2]]".to_string());
+    _packets.push("[[6]]".to_string());
+
+    // Sort packets
+    _packets = quicksort_packets(_packets);
+
+    // Find dividers
+    let mut divider_ids: (i32, i32) = (0, 0);
+    for (packet_id, packet) in _packets.iter().enumerate() {
+        match packet.as_str() {
+            "[[2]]" => divider_ids.0 = packet_id as i32 + 1,
+            "[[6]]" => divider_ids.1 = packet_id as i32 + 1,
+            _ => continue,
+        }
+    }
+
+    divider_ids.0 * divider_ids.1
 }
 
 #[test]
-fn test_pt2() {}
+fn test_pt2() {
+    assert_eq!(pt2("data/day13.test.txt".to_string()), 140);
+}
 
 pub fn run(part: i32) {
     let _result: i32 = match part {
@@ -127,7 +200,11 @@ pub fn run(part: i32) {
             );
             total_correct_packet_ids
         }
-        2 => pt2("data/day13.txt".to_string()),
+        2 => {
+            let decoder_key: i32 = pt2("data/day13.txt".to_string());
+            println!("Decoder key: {}", decoder_key);
+            decoder_key
+        }
         _ => panic!("Part {} not found.", part),
     };
 }
