@@ -21,7 +21,7 @@ impl fmt::Display for Point {
 
 impl Point {
     pub fn from(line: &str) -> Point {
-        let coords: Vec<String> = line.split(",").into_iter().map(String::from).collect();
+        let coords: Vec<String> = line.split(',').into_iter().map(String::from).collect();
         assert_eq!(coords.len(), 2, "expected 2D coordinates");
         Point {
             col: coords[0].parse::<usize>().expect("col coord not found"),
@@ -32,10 +32,7 @@ impl Point {
 
 #[test]
 fn test_point_from() {
-    assert_eq!(
-        Point::from(&"234,23".to_string()),
-        Point { col: 234, row: 23 }
-    );
+    assert_eq!(Point::from("234,23"), Point { col: 234, row: 23 });
 }
 
 fn row_to_points(row: &str) -> ScanTrace {
@@ -49,7 +46,7 @@ fn row_to_points(row: &str) -> ScanTrace {
 #[test]
 fn test_row_to_points() {
     assert_eq!(
-        row_to_points(&"234,23 -> 543,2"),
+        row_to_points("234,23 -> 543,2"),
         ScanTrace {
             points: vec![Point { col: 234, row: 23 }, Point { col: 543, row: 2 }]
         }
@@ -109,7 +106,7 @@ impl Segment {
     }
 }
 
-fn draw_segment(map: &mut Vec<Vec<usize>>, segment: Segment) {
+fn draw_segment(map: &mut [Vec<usize>], segment: Segment) {
     match segment {
         Segment::Vertical { x, y1, y2 } => {
             for y in y1..=y2 {
@@ -117,8 +114,8 @@ fn draw_segment(map: &mut Vec<Vec<usize>>, segment: Segment) {
             }
         }
         Segment::Horizontal { y, x1, x2 } => {
-            for x in x1..=x2 {
-                map[x][y] = 1;
+            for map_x in map.iter_mut().take(x2 + 1).skip(x1) {
+                map_x[y] = 1;
             }
         }
     }
@@ -134,7 +131,7 @@ pub fn print_map(map: &Vec<Vec<usize>>) {
                 _ => panic!("Unrecognized map value: {}", cell),
             }
         }
-        print!("\n");
+        println!();
     }
 }
 
@@ -234,7 +231,7 @@ fn find_direction(map: &Vec<Vec<usize>>, location: Point) -> Direction {
 }
 
 pub fn drop_sand(map: &mut Vec<Vec<usize>>, location: Point) -> bool {
-    let mut direction: Direction = find_direction(&map, location);
+    let mut direction: Direction = find_direction(map, location);
     loop {
         match direction.dtype {
             DirectionType::Void => {
@@ -247,7 +244,7 @@ pub fn drop_sand(map: &mut Vec<Vec<usize>>, location: Point) -> bool {
             _ => {}
         }
         direction = find_direction(
-            &map,
+            map,
             Point {
                 row: direction.to_row,
                 col: direction.to_col,

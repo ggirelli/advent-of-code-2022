@@ -21,7 +21,7 @@ pub fn group_row_pairs(_rows: &Vec<String>, sep: String) -> Vec<(String, String)
             current_group.push(row.to_string());
         }
     }
-    if current_group.len() > 0 {
+    if !current_group.is_empty() {
         assert_eq!(current_group.len(), 2);
         row_groups.push((current_group[0].to_string(), current_group[1].to_string()));
     }

@@ -1,4 +1,5 @@
 use crate::utils::io::{group_row_pairs, read_rows};
+use std::cmp::Ordering;
 
 fn extract_next_value(packet: &str) -> (String, String) {
     let mut open_bracket_counter: u32 = 0;
@@ -26,8 +27,8 @@ fn extract_next_value(packet: &str) -> (String, String) {
     }
 }
 
-fn value_is_list(value: &String) -> bool {
-    match value.chars().nth(0) {
+fn value_is_list(value: &str) -> bool {
+    match value.chars().next() {
         Some(letter) => letter == '[',
         None => false,
     }
@@ -40,11 +41,11 @@ fn value_to_string_list(mut value: String) -> String {
 }
 
 fn compare_values(mut first_value: String, mut second_value: String) -> Option<bool> {
-    if second_value.len() == 0 && first_value.len() > 0 {
+    if second_value.is_empty() && !first_value.is_empty() {
         return Some(false);
-    } else if first_value.len() == 0 && second_value.len() > 0 {
+    } else if first_value.is_empty() && !second_value.is_empty() {
         return Some(true);
-    } else if first_value.len() == 0 && second_value.len() == 0 {
+    } else if first_value.is_empty() && second_value.is_empty() {
         return None;
     }
 
@@ -72,16 +73,15 @@ fn compare_values(mut first_value: String, mut second_value: String) -> Option<b
         (second_next, second_value) =
             extract_next_value(&second_value[1..(second_value.len() - 1)]);
 
-        match compare_values(first_next, second_next) {
-            Some(answer) => return Some(answer),
-            None => {}
+        if let Some(answer) = compare_values(first_next, second_next) {
+            return Some(answer);
         }
 
-        if second_value.len() == 0 && first_value.len() > 0 {
+        if second_value.is_empty() && !first_value.is_empty() {
             return Some(false);
-        } else if first_value.len() == 0 && second_value.len() > 0 {
+        } else if first_value.is_empty() && !second_value.is_empty() {
             return Some(true);
-        } else if first_value.len() == 0 && second_value.len() == 0 {
+        } else if first_value.is_empty() && second_value.is_empty() {
             return None;
         }
     }
@@ -92,13 +92,10 @@ pub fn pt1(file_path: String) -> i32 {
     let packet_pairs: Vec<(String, String)> = group_row_pairs(&_rows, String::from(""));
     let mut correct_packet_ids_sum: i32 = 0;
     for (packet_id, packet) in packet_pairs.iter().enumerate() {
-        match compare_values(packet.0.to_string(), packet.1.to_string()) {
-            Some(answer) => {
-                if answer {
-                    correct_packet_ids_sum += packet_id as i32 + 1;
-                }
+        if let Some(answer) = compare_values(packet.0.to_string(), packet.1.to_string()) {
+            if answer {
+                correct_packet_ids_sum += packet_id as i32 + 1;
             }
-            None => {}
         }
     }
     correct_packet_ids_sum
@@ -111,33 +108,32 @@ fn test_pt1() {
 
 fn quicksort_packets(_packets: Vec<String>) -> Vec<String> {
     let mut sorted_packets: Vec<String> = Vec::new();
-    if _packets.len() > 2 {
-        let mut smaller_packets: Vec<String> = Vec::new();
-        let mut larger_packets: Vec<String> = Vec::new();
-        let pivot: String = _packets[0].to_string();
 
-        for packet in _packets[1..].iter() {
-            match compare_values(pivot.to_string(), packet.to_string()) {
-                Some(answer) => {
+    match _packets.len().cmp(&2) {
+        Ordering::Greater => {
+            let mut smaller_packets: Vec<String> = Vec::new();
+            let mut larger_packets: Vec<String> = Vec::new();
+            let pivot: String = _packets[0].to_string();
+
+            for packet in _packets[1..].iter() {
+                if let Some(answer) = compare_values(pivot.to_string(), packet.to_string()) {
                     if answer {
                         larger_packets.push(packet.to_string());
                     } else {
                         smaller_packets.push(packet.to_string());
                     }
                 }
-                None => {}
             }
+
+            smaller_packets = quicksort_packets(smaller_packets);
+            larger_packets = quicksort_packets(larger_packets);
+
+            sorted_packets.append(&mut smaller_packets);
+            sorted_packets.push(pivot);
+            sorted_packets.append(&mut larger_packets);
         }
-
-        smaller_packets = quicksort_packets(smaller_packets);
-        larger_packets = quicksort_packets(larger_packets);
-
-        sorted_packets.append(&mut smaller_packets);
-        sorted_packets.push(pivot);
-        sorted_packets.append(&mut larger_packets);
-    } else if _packets.len() == 2 {
-        match compare_values(_packets[0].to_string(), _packets[1].to_string()) {
-            Some(answer) => {
+        Ordering::Equal => {
+            if let Some(answer) = compare_values(_packets[0].to_string(), _packets[1].to_string()) {
                 if answer {
                     sorted_packets.push(_packets[0].to_string());
                     sorted_packets.push(_packets[1].to_string());
@@ -146,11 +142,10 @@ fn quicksort_packets(_packets: Vec<String>) -> Vec<String> {
                     sorted_packets.push(_packets[0].to_string());
                 }
             }
-            None => {}
         }
-    } else {
-        return _packets;
+        Ordering::Less => return _packets,
     }
+
     sorted_packets
 }
 
@@ -160,7 +155,7 @@ pub fn pt2(file_path: String) -> i32 {
     // Select all packets
     let mut _packets: Vec<String> = Vec::new();
     for row in _rows {
-        if row.len() > 0 {
+        if !row.is_empty() {
             _packets.push(row);
         }
     }
