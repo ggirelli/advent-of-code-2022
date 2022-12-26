@@ -1,4 +1,5 @@
 pub mod char;
+pub mod falling_sand;
 pub mod fs;
 pub mod geom;
 pub mod graph;

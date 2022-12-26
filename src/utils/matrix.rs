@@ -204,3 +204,20 @@ fn test_max() {
     assert_eq!(max(&_test_mtx(), 6), 6);
     assert_eq!(max(&_test_mtx(), -100), 5);
 }
+
+pub fn zeros(shape: (usize, usize)) -> Vec<Vec<usize>> {
+    let mut zero_matrix: Vec<Vec<usize>> = Vec::new();
+    for row_id in 0..shape.0 {
+        zero_matrix.push(Vec::new());
+        for _ in 0..shape.1 {
+            zero_matrix[row_id].push(0);
+        }
+    }
+    zero_matrix
+}
+
+#[test]
+fn test_zeros() {
+    assert_eq!(zeros((3, 2)), vec![vec![0, 0], vec![0, 0], vec![0, 0]]);
+    assert_eq!(zeros((2, 4)), vec![vec![0, 0, 0, 0], vec![0, 0, 0, 0]]);
+}
