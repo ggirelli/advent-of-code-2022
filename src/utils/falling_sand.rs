@@ -247,7 +247,7 @@ fn find_direction(map: &Vec<Vec<usize>>, location: &Point) -> Direction {
 }
 
 pub fn drop_sand(map: &mut Vec<Vec<usize>>, location: &Point) -> bool {
-    let mut direction: Direction = find_direction(map, &location);
+    let mut direction: Direction = find_direction(map, location);
     loop {
         match direction.dtype {
             DirectionType::Void => {
