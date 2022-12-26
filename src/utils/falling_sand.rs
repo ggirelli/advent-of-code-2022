@@ -135,7 +135,7 @@ pub fn print_map(map: &Vec<Vec<usize>>) {
     }
 }
 
-pub fn scan_to_map(_rows: &Vec<String>) -> (Vec<Vec<usize>>, usize) {
+pub fn scan_to_map(_rows: &Vec<String>, floor: bool) -> (Vec<Vec<usize>>, usize) {
     let mut row_lims: (usize, usize) = (usize::MAX, 0);
     let mut col_lims: (usize, usize) = (usize::MAX, 0);
 
@@ -148,17 +148,31 @@ pub fn scan_to_map(_rows: &Vec<String>) -> (Vec<Vec<usize>>, usize) {
         }
     }
 
+    let mut map: Vec<Vec<usize>>;
+    let mut col_translation: usize = col_lims.0;
+    if floor {
+        row_lims.1 += 2;
+        col_lims.1 += row_lims.1 * 2;
+        col_translation -= row_lims.1;
+    }
+
     // Update X range for memory saving
-    let col_translation: usize = col_lims.0;
     for scan in &mut _scans {
         for point in &mut scan.points {
             point.col -= col_translation;
         }
     }
-    col_lims.0 = 0;
+    col_lims.0 -= col_translation;
     col_lims.1 -= col_translation;
 
-    let mut map: Vec<Vec<usize>> = zeros((row_lims.1 + 1, col_lims.1 - col_lims.0 + 1));
+    map = zeros((row_lims.1 + 1, col_lims.1 - col_lims.0 + 1));
+    if floor {
+        let nrows: usize = map.len();
+        for i in 0..map[nrows - 1].len() {
+            map[nrows - 1][i] = 1;
+        }
+    }
+
     for trace in &_scans {
         for i in 1..trace.points.len() {
             let segment: Segment = Segment::from(&trace.points[i - 1], &trace.points[i]);
@@ -169,6 +183,7 @@ pub fn scan_to_map(_rows: &Vec<String>) -> (Vec<Vec<usize>>, usize) {
     (map, col_translation)
 }
 
+#[derive(Debug)]
 enum DirectionType {
     DropDown,
     DropDownLeft,
@@ -177,13 +192,14 @@ enum DirectionType {
     Void,
 }
 
+#[derive(Debug)]
 struct Direction {
     dtype: DirectionType,
     to_row: usize,
     to_col: usize,
 }
 
-fn find_direction(map: &Vec<Vec<usize>>, location: Point) -> Direction {
+fn find_direction(map: &Vec<Vec<usize>>, location: &Point) -> Direction {
     // Check down
     if location.row == (map.len() - 1) {
         return Direction {
@@ -230,8 +246,8 @@ fn find_direction(map: &Vec<Vec<usize>>, location: Point) -> Direction {
     }
 }
 
-pub fn drop_sand(map: &mut Vec<Vec<usize>>, location: Point) -> bool {
-    let mut direction: Direction = find_direction(map, location);
+pub fn drop_sand(map: &mut Vec<Vec<usize>>, location: &Point) -> bool {
+    let mut direction: Direction = find_direction(map, &location);
     loop {
         match direction.dtype {
             DirectionType::Void => {
@@ -243,13 +259,14 @@ pub fn drop_sand(map: &mut Vec<Vec<usize>>, location: Point) -> bool {
             }
             _ => {}
         }
+
         direction = find_direction(
             map,
-            Point {
+            &Point {
                 row: direction.to_row,
                 col: direction.to_col,
             },
-        )
+        );
     }
     true
 }
