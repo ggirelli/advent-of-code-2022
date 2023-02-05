@@ -1,28 +1,28 @@
 use crate::utils::exclusion_zone::{BeaconSensorDB, Map};
 use crate::utils::io::read_rows;
 
-fn count_not_beacon_positions(file_path: String, row_coord: i32, verbose: usize) -> usize {
+fn build_map(file_path: String, verbose: usize) -> Map {
     let _rows: Vec<String> = read_rows(&file_path);
-    let _bsdb: BeaconSensorDB = BeaconSensorDB::from_text(&_rows);
-    let map: Map = Map::from_beacon_sensors(&_bsdb);
+    let map: Map = Map::from_beacon_sensors(BeaconSensorDB::from_text(&_rows));
     if verbose > 0 {
-        _bsdb.print();
+        map.db.print();
         map.print_details();
     }
     if verbose > 1 {
-        map._print(&_bsdb);
+        map._print();
     }
-    map.count_not_beacon_positions(row_coord, &_bsdb)
+    map
 }
 
 pub fn pt1(file_path: String) -> i32 {
-    count_not_beacon_positions(file_path, 2000000, 0) as i32
+    let map: Map = build_map(file_path, 0);
+    map.count_not_beacon_positions(2000000) as i32
 }
 
 #[test]
 fn test_pt1() {
     assert_eq!(
-        count_not_beacon_positions("data/day15.test.txt".to_string(), 10, 2) as i32,
+        build_map("data/day15.test.txt".to_string(), 2).count_not_beacon_positions(10) as i32,
         26
     );
 }

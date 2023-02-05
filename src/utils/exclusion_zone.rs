@@ -193,6 +193,7 @@ impl BeaconSensorDB {
 }
 
 pub struct Map {
+    pub db: BeaconSensorDB,
     _height: usize,
     width: usize,
     transform: Point,
@@ -205,13 +206,14 @@ impl Map {
         let width: usize = (bottom_right.col - top_left.col).abs() as usize;
         let height: usize = (bottom_right.row - top_left.row).abs() as usize;
         Map {
+            db: BeaconSensorDB::new(),
             _height: height,
             width: width,
             transform: top_left,
         }
     }
 
-    pub fn from_beacon_sensors(_bsdb: &BeaconSensorDB) -> Map {
+    pub fn from_beacon_sensors(_bsdb: BeaconSensorDB) -> Map {
         let mut min_point = Point {
             col: _bsdb.beacons[0].col,
             row: _bsdb.beacons[0].row,
@@ -236,10 +238,12 @@ impl Map {
             min_point = Point::get_min(&min_point, beacon, None);
             max_point = Point::get_max(&max_point, beacon, None);
         }
-        Map::from_corners(min_point, max_point)
+        let mut map = Map::from_corners(min_point, max_point);
+        map.db = _bsdb;
+        map
     }
 
-    pub fn count_not_beacon_positions(&self, row_coord: i32, _bsdb: &BeaconSensorDB) -> usize {
+    pub fn count_not_beacon_positions(&self, row_coord: i32) -> usize {
         let mut position_counter: usize = 0;
         let mut current_position: Point = Point {
             col: self.transform.col,
@@ -256,7 +260,7 @@ impl Map {
                 _ = std::io::stdout().flush();
             }
 
-            if _bsdb.cannot_be_beacon(&current_position) {
+            if self.db.cannot_be_beacon(&current_position) {
                 position_counter += 1;
             }
         }
@@ -268,8 +272,8 @@ impl Map {
         println!("{} x {} {}", self.width, self._height, self.transform);
     }
 
-    pub fn _print(&self, _bsdb: &BeaconSensorDB) {
-        _bsdb.print();
+    pub fn _print(&self) {
+        self.db.print();
         self.print_details();
         let mut current_position: Point = Point {
             row: self.transform.row,
@@ -280,7 +284,7 @@ impl Map {
             current_position.row = self.transform.row + row_shift as i32;
             for col_shift in 0..self.width {
                 current_position.col = self.transform.col + col_shift as i32;
-                print!("{}", _bsdb.print_position(&current_position));
+                print!("{}", self.db.print_position(&current_position));
             }
             print!("\n");
         }
