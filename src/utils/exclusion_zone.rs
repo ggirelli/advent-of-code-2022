@@ -66,10 +66,79 @@ impl fmt::Display for Point {
     }
 }
 
+struct SimpleRange {
+    start: i32,
+    end: i32,
+}
+
+impl SimpleRange {
+    fn from_midpoint(mid: i32, range: i32) -> SimpleRange {
+        SimpleRange {
+            start: mid - range,
+            end: mid + range,
+        }
+    }
+
+    fn do_overlap(&self, other: SimpleRange) -> bool {
+        assert!(self.end <= self.start);
+        return (other.start >= self.start && other.start <= self.end)
+            || (other.end <= self.end && other.end >= self.start);
+    }
+
+    fn size(&self) -> usize {
+        return (self.end - self.start).abs() as usize;
+    }
+}
+
+struct Range {
+    data: Vec<SimpleRange>,
+}
+
+impl Range {
+    fn from_midpoint(mid: i32, range: i32) -> Range {
+        Range {
+            data: vec![SimpleRange::from_midpoint(mid, range)],
+        }
+    }
+
+    fn add(&mut self, other: SimpleRange) {
+        self.data.push(other);
+        self.reduce();
+    }
+
+    fn reduce(&self) {
+        // enforce sorting
+        // merge overlapping simple ranges
+    }
+
+    fn size(&self) -> usize {
+        let mut total_size: usize = 0;
+        for range in &self.data {
+            total_size += range.size();
+        }
+        total_size
+    }
+}
+
+struct Beacon {
+    coords: Point,
+    range: i32,
+}
+
+impl Beacon {
+    pub fn scanned_range_in_row(&self, rid: i32) -> Option<Range> {
+        let row_shift: i32 = (self.coords.row - rid).abs();
+        let d_left = self.range - row_shift;
+        if d_left == 0 {
+            return None;
+        }
+        Some(Range::from_midpoint(self.coords.col, d_left))
+    }
+}
+
 struct BeaconSensor {
-    beacon: Point,
+    beacon: Beacon,
     sensor: Point,
-    min_distance: i32,
 }
 
 impl BeaconSensor {
@@ -84,7 +153,7 @@ impl BeaconSensor {
                 .parse::<i32>()
                 .expect("Sensor y coordinate not found."),
         };
-        let beacon: Point = Point {
+        let beacon_coords: Point = Point {
             col: split_line[8][2..(split_line[8].len() - 1)]
                 .parse::<i32>()
                 .expect("Beacon x coordinate not found."),
@@ -92,11 +161,13 @@ impl BeaconSensor {
                 .parse::<i32>()
                 .expect("Beacon y coordinate not found."),
         };
-        let min_distance: i32 = beacon.mdist(&sensor);
+        let min_distance: i32 = beacon_coords.mdist(&sensor);
         BeaconSensor {
-            beacon: beacon,
+            beacon: Beacon {
+                coords: beacon_coords,
+                range: min_distance,
+            },
             sensor: sensor,
-            min_distance: min_distance,
         }
     }
 }
@@ -128,12 +199,12 @@ impl BeaconSensorDB {
 
     fn insert(&mut self, _bs: BeaconSensor) {
         self.sensors.push(_bs.sensor);
-        match self.beacons.binary_search(&_bs.beacon) {
+        match self.beacons.binary_search(&_bs.beacon.coords) {
             Ok(sid) => {
                 self.closest.push(sid);
             }
             Err(sid) => {
-                self.beacons.insert(sid, _bs.beacon);
+                self.beacons.insert(sid, _bs.beacon.coords);
                 for cid in 0..self.closest.len() {
                     if self.closest[cid] >= sid {
                         self.closest[cid] += 1;
@@ -142,7 +213,7 @@ impl BeaconSensorDB {
                 self.closest.push(sid);
             }
         }
-        self.min_distances.push(_bs.min_distance);
+        self.min_distances.push(_bs.beacon.range);
     }
 
     fn cannot_be_beacon(&self, pos: &Point) -> bool {
