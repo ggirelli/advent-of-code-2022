@@ -2,9 +2,9 @@ use std::fmt;
 use std::io::Write;
 
 #[derive(Debug, Eq, PartialOrd, Ord)]
-struct Point {
-    col: i32,
-    row: i32,
+pub struct Point {
+    pub col: i32,
+    pub row: i32,
 }
 
 impl Point {
@@ -266,6 +266,34 @@ impl Map {
         }
         println!();
         position_counter
+    }
+
+    pub fn get_candidate_beacons_in_window(
+        &self,
+        top_left: Point,
+        bottom_right: Point,
+    ) -> Vec<Point> {
+        assert!(top_left.row <= bottom_right.row);
+        assert!(top_left.col <= bottom_right.col);
+        let mut candidate_positions: Vec<Point> = Vec::new();
+        for row in top_left.row..bottom_right.row {
+            for col in top_left.col..bottom_right.col {
+                let current_position: Point = Point { col: col, row: row };
+
+                print!(
+                    "\r{:?} => {:?} => {:?}                  ",
+                    top_left, current_position, bottom_right
+                );
+                _ = std::io::stdout().flush();
+
+                if !self.db.cannot_be_beacon(&current_position)
+                    & !self.db.beacons.contains(&current_position)
+                {
+                    candidate_positions.push(current_position);
+                }
+            }
+        }
+        candidate_positions
     }
 
     pub fn print_details(&self) {
