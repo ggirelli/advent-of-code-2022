@@ -2,9 +2,9 @@ use std::fmt;
 use std::io::Write;
 
 #[derive(Debug, Eq, PartialOrd, Ord)]
-struct Point {
-    col: i32,
-    row: i32,
+pub struct Point {
+    pub col: i32,
+    pub row: i32,
 }
 
 impl Point {
@@ -66,10 +66,79 @@ impl fmt::Display for Point {
     }
 }
 
+struct SimpleRange {
+    start: i32,
+    end: i32,
+}
+
+impl SimpleRange {
+    fn from_midpoint(mid: i32, range: i32) -> SimpleRange {
+        SimpleRange {
+            start: mid - range,
+            end: mid + range,
+        }
+    }
+
+    fn do_overlap(&self, other: SimpleRange) -> bool {
+        assert!(self.end <= self.start);
+        return (other.start >= self.start && other.start <= self.end)
+            || (other.end <= self.end && other.end >= self.start);
+    }
+
+    fn size(&self) -> usize {
+        return (self.end - self.start).abs() as usize;
+    }
+}
+
+struct Range {
+    data: Vec<SimpleRange>,
+}
+
+impl Range {
+    fn from_midpoint(mid: i32, range: i32) -> Range {
+        Range {
+            data: vec![SimpleRange::from_midpoint(mid, range)],
+        }
+    }
+
+    fn add(&mut self, other: SimpleRange) {
+        self.data.push(other);
+        self.reduce();
+    }
+
+    fn reduce(&self) {
+        // enforce sorting
+        // merge overlapping simple ranges
+    }
+
+    fn size(&self) -> usize {
+        let mut total_size: usize = 0;
+        for range in &self.data {
+            total_size += range.size();
+        }
+        total_size
+    }
+}
+
+struct Beacon {
+    coords: Point,
+    range: i32,
+}
+
+impl Beacon {
+    pub fn scanned_range_in_row(&self, rid: i32) -> Option<Range> {
+        let row_shift: i32 = (self.coords.row - rid).abs();
+        let d_left = self.range - row_shift;
+        if d_left == 0 {
+            return None;
+        }
+        Some(Range::from_midpoint(self.coords.col, d_left))
+    }
+}
+
 struct BeaconSensor {
-    beacon: Point,
+    beacon: Beacon,
     sensor: Point,
-    min_distance: i32,
 }
 
 impl BeaconSensor {
@@ -84,7 +153,7 @@ impl BeaconSensor {
                 .parse::<i32>()
                 .expect("Sensor y coordinate not found."),
         };
-        let beacon: Point = Point {
+        let beacon_coords: Point = Point {
             col: split_line[8][2..(split_line[8].len() - 1)]
                 .parse::<i32>()
                 .expect("Beacon x coordinate not found."),
@@ -92,11 +161,13 @@ impl BeaconSensor {
                 .parse::<i32>()
                 .expect("Beacon y coordinate not found."),
         };
-        let min_distance: i32 = beacon.mdist(&sensor);
+        let min_distance: i32 = beacon_coords.mdist(&sensor);
         BeaconSensor {
-            beacon: beacon,
+            beacon: Beacon {
+                coords: beacon_coords,
+                range: min_distance,
+            },
             sensor: sensor,
-            min_distance: min_distance,
         }
     }
 }
@@ -128,12 +199,12 @@ impl BeaconSensorDB {
 
     fn insert(&mut self, _bs: BeaconSensor) {
         self.sensors.push(_bs.sensor);
-        match self.beacons.binary_search(&_bs.beacon) {
+        match self.beacons.binary_search(&_bs.beacon.coords) {
             Ok(sid) => {
                 self.closest.push(sid);
             }
             Err(sid) => {
-                self.beacons.insert(sid, _bs.beacon);
+                self.beacons.insert(sid, _bs.beacon.coords);
                 for cid in 0..self.closest.len() {
                     if self.closest[cid] >= sid {
                         self.closest[cid] += 1;
@@ -142,7 +213,7 @@ impl BeaconSensorDB {
                 self.closest.push(sid);
             }
         }
-        self.min_distances.push(_bs.min_distance);
+        self.min_distances.push(_bs.beacon.range);
     }
 
     fn cannot_be_beacon(&self, pos: &Point) -> bool {
@@ -193,6 +264,7 @@ impl BeaconSensorDB {
 }
 
 pub struct Map {
+    pub db: BeaconSensorDB,
     _height: usize,
     width: usize,
     transform: Point,
@@ -205,13 +277,14 @@ impl Map {
         let width: usize = (bottom_right.col - top_left.col).abs() as usize;
         let height: usize = (bottom_right.row - top_left.row).abs() as usize;
         Map {
+            db: BeaconSensorDB::new(),
             _height: height,
             width: width,
             transform: top_left,
         }
     }
 
-    pub fn from_beacon_sensors(_bsdb: &BeaconSensorDB) -> Map {
+    pub fn from_beacon_sensors(_bsdb: BeaconSensorDB) -> Map {
         let mut min_point = Point {
             col: _bsdb.beacons[0].col,
             row: _bsdb.beacons[0].row,
@@ -236,10 +309,12 @@ impl Map {
             min_point = Point::get_min(&min_point, beacon, None);
             max_point = Point::get_max(&max_point, beacon, None);
         }
-        Map::from_corners(min_point, max_point)
+        let mut map = Map::from_corners(min_point, max_point);
+        map.db = _bsdb;
+        map
     }
 
-    pub fn count_not_beacon_positions(&self, row_coord: i32, _bsdb: &BeaconSensorDB) -> usize {
+    pub fn count_not_beacon_positions(&self, row_coord: i32) -> usize {
         let mut position_counter: usize = 0;
         let mut current_position: Point = Point {
             col: self.transform.col,
@@ -256,7 +331,7 @@ impl Map {
                 _ = std::io::stdout().flush();
             }
 
-            if _bsdb.cannot_be_beacon(&current_position) {
+            if self.db.cannot_be_beacon(&current_position) {
                 position_counter += 1;
             }
         }
@@ -264,12 +339,40 @@ impl Map {
         position_counter
     }
 
+    pub fn get_candidate_beacons_in_window(
+        &self,
+        top_left: Point,
+        bottom_right: Point,
+    ) -> Vec<Point> {
+        assert!(top_left.row <= bottom_right.row);
+        assert!(top_left.col <= bottom_right.col);
+        let mut candidate_positions: Vec<Point> = Vec::new();
+        for row in top_left.row..bottom_right.row {
+            for col in top_left.col..bottom_right.col {
+                let current_position: Point = Point { col: col, row: row };
+
+                print!(
+                    "\r{:?} => {:?} => {:?}                  ",
+                    top_left, current_position, bottom_right
+                );
+                _ = std::io::stdout().flush();
+
+                if !self.db.cannot_be_beacon(&current_position)
+                    & !self.db.beacons.contains(&current_position)
+                {
+                    candidate_positions.push(current_position);
+                }
+            }
+        }
+        candidate_positions
+    }
+
     pub fn print_details(&self) {
         println!("{} x {} {}", self.width, self._height, self.transform);
     }
 
-    pub fn _print(&self, _bsdb: &BeaconSensorDB) {
-        _bsdb.print();
+    pub fn _print(&self) {
+        self.db.print();
         self.print_details();
         let mut current_position: Point = Point {
             row: self.transform.row,
@@ -280,7 +383,7 @@ impl Map {
             current_position.row = self.transform.row + row_shift as i32;
             for col_shift in 0..self.width {
                 current_position.col = self.transform.col + col_shift as i32;
-                print!("{}", _bsdb.print_position(&current_position));
+                print!("{}", self.db.print_position(&current_position));
             }
             print!("\n");
         }
